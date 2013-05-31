@@ -47,7 +47,9 @@ Dict::Add('EN US', 'English', 'English', array(
 	'MailInbox:Server' => 'Mailbox Configuration',
 	'MailInbox:Behavior' => 'Behavior on Incoming eMails',
 	'MailInbox:Caller' => 'Unknown Callers',
-	'MailInbox:Errors' => 'Error Handling',
+	'MailInbox:Errors' => 'Emails in Error',
 	'Menu:MailInboxes' => 'Incoming eMail Inboxes',
 	'Menu:MailInboxes+' => 'Configuration of Inboxes to scan for Incoming eMails',
+	'MailInboxStandard:DebugTrace' => 'Debug Trace',
+	'MailInboxStandard:DebugTraceNotActive' => 'Activate the debug on this Inbox to see the debug trace here.',
 ));

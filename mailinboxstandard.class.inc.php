@@ -14,6 +14,7 @@ class MailInboxStandard extends MailInboxBase
 			"db_key_field" => "id",
 			"db_finalclass_field" => "realclass",
 			"display_template" => "",
+			'icon' => utils::GetAbsoluteUrlModulesRoot().basename(dirname(__FILE__)).'/images/mailbox.png',
 		);
 		MetaModel::Init_Params($aParams);
 		MetaModel::Init_InheritAttributes();
@@ -41,7 +42,7 @@ class MailInboxStandard extends MailInboxBase
 											),
 										)); // Attributes to be displayed for the complete details
 		MetaModel::Init_SetZListItems('list', array('server', 'mailbox','protocol', 'active')); // Attributes to be displayed for a list
-		MetaModel::Init_SetZListItems('standard_search', array('server', 'mailbox','protocol', 'active')); // Attributes to be displayed in the search form
+		MetaModel::Init_SetZListItems('standard_search', array('server', 'login', 'mailbox','protocol', 'active')); // Attributes to be displayed in the search form
 	}
 
 	/**
@@ -103,7 +104,14 @@ EOF
 			$this->DBUpdateTracked($oMyChange);
 		}
 	}
-		
+	
+	protected function RecordAttChanges(array $aValues, array $aOrigValues)
+	{
+		// Do NOT record the changes on the 'debug trace' attribute
+		unset($aValues['debug_trace']);
+		parent::RecordAttChanges($aValues, $aOrigValues);
+	}
+	
 	/**
 	 * Initial dispatching of an incoming email: determines what to do with the email
 	 * @param EmailReplica $oEmailReplica The EmailReplica associated with the email. null for a new (unread) mail

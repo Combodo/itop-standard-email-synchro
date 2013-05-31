@@ -47,7 +47,9 @@ Dict::Add('FR FR', 'French', 'Français', array(
 	'MailInbox:Server' => 'Configuration de la boîte mail',
 	'MailInbox:Behavior' => 'Comportement',
 	'MailInbox:Caller' => 'Contacts inconnus',
-	'MailInbox:Errors' => 'Gestion des erreurs',
+	'MailInbox:Errors' => 'eMails en erreur',
 	'Menu:MailInboxes' => 'Gestion des Boîtes Mail',
 	'Menu:MailInboxes+' => 'Configuration des Boîtes Mails à scanner',
+	'MailInboxStandard:DebugTrace' => 'Trace de Debug',
+	'MailInboxStandard:DebugTraceNotActive' => 'Activez la trace sur cette boîte mail pour voir le résultat ici.',
 ));
