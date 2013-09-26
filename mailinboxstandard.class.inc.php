@@ -288,7 +288,9 @@ EOF
 		}
 		else
 		{
-			$oTicket->Set('title', $oEmail->sSubject);
+			$oAttDef = MetaModel::GetAttributeDef(get_class($oTicket), 'title');
+			$iMaxSize = $oAttDef->GetMaxSize();
+			$oTicket->Set('title', substr($oEmail->sSubject, 0, $iMaxSize));
 		}
 		$this->Trace("Email body format: ".$oEmail->sBodyFormat);
 		if ($oEmail->sBodyFormat == 'text/html')
@@ -305,7 +307,14 @@ EOF
 		{
 			$sTicketDescription = 'No description provided.';
 		}
-		$oTicket->Set('description', $sTicketDescription);
+		$oAttDef = MetaModel::GetAttributeDef(get_class($oTicket), 'description');
+		$iMaxSize = $oAttDef->GetMaxSize();
+		$bTextTruncated = false;
+		if (strlen($sTicketDescription) > $iMaxSize)
+		{
+			$oEmail->aAttachments[] = array('content' => $sTicketDescription, 'filename' => 'original message.txt', 'mimeType' => 'text/plain');
+		}
+		$oTicket->Set('description', substr($sTicketDescription, 0, $iMaxSize));
 		
 		// Default values
 		$sDefaultValues = $this->Get('ticket_default_values');
