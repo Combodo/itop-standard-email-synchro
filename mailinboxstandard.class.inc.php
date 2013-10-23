@@ -185,6 +185,7 @@ EOF
 				catch(Exception $e)
 				{
 					$this->Trace('Failed to create a Person for the email address "'.$oEmail->sCallerEmail.'".');
+					$this->Trace($e->getMessage());
 					$oRawEmail = $oSource->GetMessage($index);
 					$this->HandleError($oEmail, 'failed_to_create_contact', $oRawEmail);
 					return null;
@@ -215,7 +216,8 @@ EOF
 		{
 			// No associated ticket found by parsing the headers, check
 			// if the subject does not match a specific pattern
-			if(($this->Get('title_pattern') != '') && (preg_match($this->Get('title_pattern'), $oEmail->sSubject, $aMatches)))
+			$sPattern = $this->FixPattern($this->Get('title_pattern'));
+			if(($sPattern != '') && (preg_match($sPattern, $oEmail->sSubject, $aMatches)))
 			{
 				$iTicketId = 0;
 				sscanf($aMatches[1], '%d', $iTicketId);
@@ -314,7 +316,7 @@ EOF
 		{
 			$oEmail->aAttachments[] = array('content' => $sTicketDescription, 'filename' => 'original message.txt', 'mimeType' => 'text/plain');
 		}
-		$oTicket->Set('description', substr($sTicketDescription, 0, $iMaxSize));
+		$oTicket->Set('description', $this->FitTextIn($sTicketDescription, $iMaxSize - 1000)); // Keep some room just in case...
 		
 		// Default values
 		$sDefaultValues = $this->Get('ticket_default_values');
@@ -416,11 +418,11 @@ EOF
 	
 	/**
 	 * Error handler... what to do in case of error ??
-	 * @param EmailMessage $oEmail
+	 * @param EmailMessage $oEmail can be null in case of decoding error (like message too big)
 	 * @param string $sErrorCode
 	 * @return void
 	 */
-	public function HandleError(EmailMessage $oEmail, $sErrorCode, $oRawEmail = null)
+	public function HandleError($oEmail, $sErrorCode, $oRawEmail = null, $sAdditionalErrorMessage = '')
 	{
 		$sTo = $this->Get('notify_errors_to');
 		$sFrom = $this->Get('notify_errors_from');
@@ -438,8 +440,54 @@ EOF
 			
 			case 'decode_failed':
 			$sSubject = '[iTop] Failed to decode an incoming eMail';
-			$sBody = "<p>The following eMail (see attachment) was not decoded properly and therefore was not processed at all.</p>\n";
-			$sBody .= "<p>The eMail was deleted from the mailbox.</p>\n";
+			if ($oRawEmail && ($oRawEmail->GetSize() > EmailBackgroundProcess::$iMaxEmailSize))
+			{
+				$sBody = "<p>The incoming eMail is bigger (".$oRawEmail->GetSize()." bytes) than the maximum configured size (maximum_email_size = ".EmailBackgroundProcess::$iMaxEmailSize.").</p>\n";
+				
+				if ($this->sBigFilesDir == '')
+				{
+					$sBody .= "<p>The email was deleted. In the future you can:\n<ul>\n";
+					$sBody .= "<li>either increase the 'maximum_email_size' parameter in the iTop configuration file, so that the message gets processed</li>\n";
+					$sBody .= "<li>or configure the parameter 'big_files_dir' in the iTop configuration file, so that such emails are kept on the web server for further inspection.</li>\n</ul>";
+				}
+				else if (!is_writable($this->sBigFilesDir))
+				{
+					$sBody .= "<p>The email was deleted, since the directory where to save such files on the web server ($this->sBigFilesDir) is NOT writable to iTop.</p>\n";
+				}
+				else
+				{
+					$idx = 1;
+					$sFileName = 'email_'.(date('Y-m-d')).'_';
+					$sExtension = '.eml';
+					$hFile = false;
+					while(($hFile = fopen($this->sBigFilesDir.'/'.$sFileName.$idx.$sExtension, 'x')) === false)
+					{
+						$idx++;
+					}
+					fwrite($hFile, $oRawEmail->GetRawContent());
+					fclose($hFile);
+					$sBody .= "<p>The message was saved as '{$sFileName}{$idx}{$sExtension}' on the web server, in the directory '{$this->sBigFilesDir}'.</p>\n";
+					$sBody .= "<p>In order process such messages, increase the value of the 'maximum_email_size' parameter in the iTop configuration file.</p>\n";
+				}
+				
+				$oRawEmail = null; // Do not attach the original message to the mail sent to the admin since it's already big, send the message now
+				$this->Trace($sSubject."\n\n".$sBody);
+				// Send the email now...
+				if(($sTo != '') && ($sFrom != ''))
+				{
+					$oEmailToSend = new Email();
+			  		$oEmailToSend->SetRecipientTO($sTo);
+			  		$oEmailToSend->SetSubject($sSubject);
+			  		$oEmailToSend->SetBody($sBody, 'text/html');	
+			  		$oEmailToSend->SetRecipientFrom($sFrom);
+			  		$oEmailToSend->Send($aIssues, true /* bForceSynchronous */, null /* $oLog */);
+				}
+			}
+			else
+			{
+				$sBody = "<p>The following eMail (see attachment) was not decoded properly and therefore was not processed at all.</p>\n";
+				$sBody .= "<p>The eMail was deleted from the mailbox.</p>\n";
+			}
 			break;
 			
 			case 'nothing_to_update':
@@ -456,6 +504,25 @@ EOF
 			$sBody .= "Check the contact's default values configured in the Mail Inbox.</p>\n";
 			$sBody .= "<p>The eMail was deleted from the mailbox.</p>\n";
 			break;
+			
+			case 'rejected_attachments':
+			$sSubject = '[iTop] Failed to process attachment(s) for the incoming eMail - '.$oEmail->sSubject;
+			$sBody = "<p>Some attachments to the eMail were not processed because they are too big:</p>\n";
+			$sBody .= "<pre>".$sAdditionalErrorMessage."</pre>\n";
+			
+			$oRawEmail = null; // No original message in attachment
+			$this->Trace($sSubject."\n\n".$sBody);
+			// Send the email now...
+			if(($sTo != '') && ($sFrom != ''))
+			{
+				$oEmailToSend = new Email();
+		  		$oEmailToSend->SetRecipientTO($sTo);
+		  		$oEmailToSend->SetSubject($sSubject);
+		  		$oEmailToSend->SetBody($sBody, 'text/html');	
+		  		$oEmailToSend->SetRecipientFrom($sFrom);
+		  		$oEmailToSend->Send($aIssues, true /* bForceSynchronous */, null /* $oLog */);
+			}
+			break;
 				
 			default:
 			$sSubject = '[iTop] handle error';
@@ -468,10 +535,32 @@ EOF
 			$this->Trace($sSubject."\n\n".$sBody);
 			$oRawEmail->SendAsAttachment($sTo, $sFrom, $sSubject, $sBody);
 		}
-		else
+		else if($oRawEmail != null)
 		{
 			$this->Trace("HandleError($sErrorCode): Failed to forward the email...(To: '$sTo', From: '$sFrom').");
 		}
+	}
+	
+	/**
+	 * Make sure that the given string is a proper PCRE pattern by surrounding
+	 * it with slashes, if needed
+	 * @param string $sPattern The pattern to check (can be an empty string)
+	 * @return string The valid pattern (or an empty string)
+	 */
+	protected function FixPattern($sPattern)
+	{
+		$sReturn = $sPattern;
+		if ($sPattern != '')
+		{
+			$sFirstChar = substr($sPattern, 0, 1);
+			$sLastChar = substr($sPattern, -1, 1);
+			if (($sFirstChar != $sLastChar) || preg_match('/[0-9A-Z-a-z\\]/', $sFirstChar) || preg_match('/[0-9A-Z-a-z\\]/', $sLastChar))
+			{
+				// Missing delimiter patterns
+				$sReturn = '/'.$sPattern.'/';
+			}
+		}
+		return $sReturn;
 	}
 }
 
