@@ -373,6 +373,7 @@ EOF
 			$this->Trace("Extracting the new part...");
 			$sBodyText = $oEmail->GetNewPart();
 		}
+		$this->Trace($oEmail->sTrace);
 		// Write the log on behalf of the caller
 		$sCallerName = $oEmail->sCallerName;
 		if (empty($sCallerName))
@@ -554,7 +555,7 @@ EOF
 		{
 			$sFirstChar = substr($sPattern, 0, 1);
 			$sLastChar = substr($sPattern, -1, 1);
-			if (($sFirstChar != $sLastChar) || preg_match('/[0-9A-Z-a-z\\]/', $sFirstChar) || preg_match('/[0-9A-Z-a-z\\]/', $sLastChar))
+			if (($sFirstChar != $sLastChar) || preg_match('/[0-9A-Z-a-z]/', $sFirstChar) || preg_match('/[0-9A-Z-a-z]/', $sLastChar))
 			{
 				// Missing delimiter patterns
 				$sReturn = '/'.$sPattern.'/';
