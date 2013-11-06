@@ -363,16 +363,9 @@ EOF
 		$this->Trace("iTop Simple Email Synchro: Updating the iTop ticket ".$oTicket->GetName()." from eMail '".$oEmail->sSubject."'");
 
 		$this->Trace("Email body format: ".$oEmail->sBodyFormat);
-		if ($oEmail->sBodyFormat == 'text/html')
-		{
-			$this->Trace("Extracting the new part and removing HTML tags...");
-			$sBodyText = $oEmail->StripTags($oEmail->GetNewPart());
-		}
-		else
-		{
-			$this->Trace("Extracting the new part...");
-			$sBodyText = $oEmail->GetNewPart();
-		}
+		$this->Trace("Extracting the new part...");
+		$sBodyText = $oEmail->GetNewPart(); // GetNewPart always returns a plain text version of the message
+		
 		$this->Trace($oEmail->sTrace);
 		// Write the log on behalf of the caller
 		$sCallerName = $oEmail->sCallerName;
