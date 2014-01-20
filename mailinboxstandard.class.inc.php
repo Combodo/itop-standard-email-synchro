@@ -24,6 +24,7 @@ class MailInboxStandard extends MailInboxBase
 		MetaModel::Init_AddAttribute(new AttributeString("title_pattern", array("allowed_values"=>null, "sql"=>"title_pattern", "default_value"=>null, "is_null_allowed"=>true, "depends_on"=>array())));
 		MetaModel::Init_AddAttribute(new AttributeEnum("unknown_caller_behavior", array("allowed_values"=>new ValueSetEnum('create_contact,reject_email'), "sql"=>"unknown_caller_behavior", "default_value"=>'reject_email', "is_null_allowed"=>false, "depends_on"=>array())));
 		MetaModel::Init_AddAttribute(new AttributeText("caller_default_values", array("allowed_values"=>null, "sql"=>"caller_default_values", "default_value"=>null, "is_null_allowed"=>true, "depends_on"=>array())));
+		MetaModel::Init_AddAttribute(new AttributeEnum("error_behavior", array("allowed_values"=>new ValueSetEnum('delete,mark_as_error'), "sql"=>"error_behavior", "default_value"=>'mark_as_error', "is_null_allowed"=>false, "depends_on"=>array())));
 		MetaModel::Init_AddAttribute(new AttributeEmailAddress("notify_errors_to", array("allowed_values"=>null, "sql"=>"notify_errors_to", "default_value"=>"", "is_null_allowed"=>true, "depends_on"=>array())));
 		MetaModel::Init_AddAttribute(new AttributeEmailAddress("notify_errors_from", array("allowed_values"=>null, "sql"=>"notify_errors_from", "default_value"=>"", "is_null_allowed"=>true, "depends_on"=>array())));
 		MetaModel::Init_AddAttribute(new AttributeEnum("trace", array("allowed_values"=>new ValueSetEnum('yes,no'), "sql"=>"trace", "default_value"=>'no', "is_null_allowed"=>false, "depends_on"=>array())));
@@ -34,7 +35,7 @@ class MailInboxStandard extends MailInboxBase
 		MetaModel::Init_SetZListItems('details', array(
 											'col:col0' => array(
 													'fieldset:MailInbox:Server' => array('server', 'login', 'password', 'protocol', 'port', 'mailbox', 'active', 'trace'),
-													'fieldset:MailInbox:Errors' => array('notify_errors_to', 'notify_errors_from'),
+													'fieldset:MailInbox:Errors' => array('error_behavior', 'notify_errors_to', 'notify_errors_from'),
 											),
 											'col:col1' => array(
 													'fieldset:MailInbox:Behavior' => array( 'behavior', 'target_class', 'ticket_default_values', 'title_pattern'),
@@ -114,10 +115,10 @@ EOF
 	
 	/**
 	 * Initial dispatching of an incoming email: determines what to do with the email
-	 * @param EmailReplica $oEmailReplica The EmailReplica associated with the email. null for a new (unread) mail
+	 * @param EmailReplica $oEmailReplica The EmailReplica associated with the email. A new replica (i.e. not yet in DB) one for new emails
 	 * @return int An action code from EmailProcessor
 	 */
-	public function DispatchEmail($oEmailReplica = null)
+	public function DispatchEmail(EmailReplica $oEmailReplica)
 	{
 		return parent::DispatchEmail($oEmailReplica);
 	}
@@ -272,6 +273,15 @@ EOF
 	 */
 	public function CreateTicketFromEmail(EmailMessage $oEmail, Contact $oCaller)
 	{
+			// In case of error (exception...) set the behavior
+		if ($this->Get('error_behavior') == 'delete')
+		{
+			$this->SetNextAction(EmailProcessor::DELETE_MESSAGE); // Remove the message from the mailbox
+		}
+		else
+		{
+			$this->SetNextAction(EmailProcessor::MARK_MESSAGE_AS_ERROR); // Keep the message in the mailbox, but marked as error
+		}
 		$this->Trace("Creating a new Ticket from eMail '".$oEmail->sSubject."'");
 		if (!MetaModel::IsValidClass($this->Get('target_class')))
 		{
@@ -345,6 +355,7 @@ EOF
 		// Process attachments
 		$this->AddAttachments($oTicket, $oEmail, $oMyChange);
 		
+		$this->SetNextAction(EmailProcessor::NO_ACTION); // Ok, done		
 		return $oTicket;
 	}
 	
@@ -359,6 +370,16 @@ EOF
 	 */
 	public function UpdateTicketFromEmail(Ticket $oTicket, EmailMessage $oEmail, Contact $oCaller)
 	{
+		// In case of error (exception...) set the behavior
+		if ($this->Get('error_behavior') == 'delete')
+		{
+			$this->SetNextAction(EmailProcessor::DELETE_MESSAGE); // Remove the message from the mailbox
+		}
+		else
+		{
+			$this->SetNextAction(EmailProcessor::MARK_MESSAGE_AS_ERROR); // Keep the message in the mailbox, but marked as error
+		}		
+		
 		// Try to extract what's new from the message's body
 		$this->Trace("iTop Simple Email Synchro: Updating the iTop ticket ".$oTicket->GetName()." from eMail '".$oEmail->sSubject."'");
 
@@ -406,7 +427,8 @@ EOF
 		{
 			$oTrigger->DoActivate($oTicket->ToArgs('this'));
 		}
-						
+		
+		$this->SetNextAction(EmailProcessor::NO_ACTION); // Ok, done
 		return $oTicket;		
 	}
 	
@@ -420,7 +442,16 @@ EOF
 	{
 		$sTo = $this->Get('notify_errors_to');
 		$sFrom = $this->Get('notify_errors_from');
-		$this->SetNextAction(EmailProcessor::DELETE_MESSAGE); // Remove the message from the mailbox
+		if ($this->Get('error_behavior') == 'delete')
+		{
+			$this->SetNextAction(EmailProcessor::DELETE_MESSAGE); // Remove the message from the mailbox
+			$sLastAction = "<p>The eMail was deleted from the mailbox.</p>\n";
+		}
+		else
+		{
+			$this->SetNextAction(EmailProcessor::MARK_MESSAGE_AS_ERROR); // Keep the message in the mailbox, but marked as error
+			$sLastAction = "<p>The eMail is marked as error and will be ignored in further processing of the mailbox.</p>\n";
+		}
 		
 		switch($sErrorCode)
 		{
@@ -429,7 +460,8 @@ EOF
 			$sSubject = '[iTop] Unknown contact in incoming eMail - '.$oEmail->sSubject;
 			$sBody = "<p>The following email (see attachment) comes from an unknown caller (".$oEmail->sCallerEmail.").<br/>\n";
 			$sBody .= "<p>Check the configuration of the Mail Inbox '".$this->GetName()."', since the current configuration does not allow to create new contacts for unknown callers.</p>\n";
-			$sBody .= "<p>The eMail was deleted from the mailbox.</p>\n";
+			$sBody .= $sLastAction;
+			$this->sLastError = "Unknown caller (".$oEmail->sCallerEmail.")";
 			break;
 			
 			case 'decode_failed':
@@ -437,33 +469,41 @@ EOF
 			if ($oRawEmail && ($oRawEmail->GetSize() > EmailBackgroundProcess::$iMaxEmailSize))
 			{
 				$sBody = "<p>The incoming eMail is bigger (".$oRawEmail->GetSize()." bytes) than the maximum configured size (maximum_email_size = ".EmailBackgroundProcess::$iMaxEmailSize.").</p>\n";
+				$this->sLastError = "eMail is bigger (".$oRawEmail->GetSize()." bytes) than the maximum configured size (maximum_email_size = ".EmailBackgroundProcess::$iMaxEmailSize.")";
 				
-				if ($this->sBigFilesDir == '')
+				if ($this->Get('error_behavior') == 'delete')
 				{
-					$sBody .= "<p>The email was deleted. In the future you can:\n<ul>\n";
-					$sBody .= "<li>either increase the 'maximum_email_size' parameter in the iTop configuration file, so that the message gets processed</li>\n";
-					$sBody .= "<li>or configure the parameter 'big_files_dir' in the iTop configuration file, so that such emails are kept on the web server for further inspection.</li>\n</ul>";
-				}
-				else if (!is_writable($this->sBigFilesDir))
-				{
-					$sBody .= "<p>The email was deleted, since the directory where to save such files on the web server ($this->sBigFilesDir) is NOT writable to iTop.</p>\n";
+					if ($this->sBigFilesDir == '')
+					{
+						$sBody .= "<p>The email was deleted. In the future you can:\n<ul>\n";
+						$sBody .= "<li>either increase the 'maximum_email_size' parameter in the iTop configuration file, so that the message gets processed</li>\n";
+						$sBody .= "<li>or configure the parameter 'big_files_dir' in the iTop configuration file, so that such emails are kept on the web server for further inspection.</li>\n</ul>";
+					}
+					else if (!is_writable($this->sBigFilesDir))
+					{
+						$sBody .= "<p>The email was deleted, since the directory where to save such files on the web server ($this->sBigFilesDir) is NOT writable to iTop.</p>\n";
+					}
+					else
+					{
+						$idx = 1;
+						$sFileName = 'email_'.(date('Y-m-d')).'_';
+						$sExtension = '.eml';
+						$hFile = false;
+						while(($hFile = fopen($this->sBigFilesDir.'/'.$sFileName.$idx.$sExtension, 'x')) === false)
+						{
+							$idx++;
+						}
+						fwrite($hFile, $oRawEmail->GetRawContent());
+						fclose($hFile);
+						$sBody .= "<p>The message was saved as '{$sFileName}{$idx}{$sExtension}' on the web server, in the directory '{$this->sBigFilesDir}'.</p>\n";
+						$sBody .= "<p>In order process such messages, increase the value of the 'maximum_email_size' parameter in the iTop configuration file.</p>\n";
+					}
 				}
 				else
 				{
-					$idx = 1;
-					$sFileName = 'email_'.(date('Y-m-d')).'_';
-					$sExtension = '.eml';
-					$hFile = false;
-					while(($hFile = fopen($this->sBigFilesDir.'/'.$sFileName.$idx.$sExtension, 'x')) === false)
-					{
-						$idx++;
-					}
-					fwrite($hFile, $oRawEmail->GetRawContent());
-					fclose($hFile);
-					$sBody .= "<p>The message was saved as '{$sFileName}{$idx}{$sExtension}' on the web server, in the directory '{$this->sBigFilesDir}'.</p>\n";
-					$sBody .= "<p>In order process such messages, increase the value of the 'maximum_email_size' parameter in the iTop configuration file.</p>\n";
+					$sBody .= $sLastAction;
 				}
-				
+								
 				$oRawEmail = null; // Do not attach the original message to the mail sent to the admin since it's already big, send the message now
 				$this->Trace($sSubject."\n\n".$sBody);
 				// Send the email now...
@@ -480,7 +520,7 @@ EOF
 			else
 			{
 				$sBody = "<p>The following eMail (see attachment) was not decoded properly and therefore was not processed at all.</p>\n";
-				$sBody .= "<p>The eMail was deleted from the mailbox.</p>\n";
+				$sBody .= $sLastAction;
 			}
 			break;
 			
@@ -488,7 +528,8 @@ EOF
 			$sSubject = '[iTop] Unable to update a ticket from the eMail - '.$oEmail->sSubject;
 			$sBody = "<p>The following email (see attachment) does not seem to correspond to a ticket in iTop.<br/>\n";
 			$sBody .= "The Mail Inbox ".$this->GetName()." is configured to only update existing tickets, therefore the eMail has been rejected.</p>\n";
-			$sBody .= "<p>The eMail was deleted from the mailbox.</p>\n";
+			$sBody .= $sLastAction;
+			$this->sLastError = "No corresponding iTop ticket to update (mode=update only)";
 			break;
 			
 			case 'failed_to_create_contact':
@@ -496,13 +537,15 @@ EOF
 			$sBody = "<p>The following email (see attachment) comes from an unknown caller (".$oEmail->sCallerEmail.").<br/>\n";
 			$sBody .= "The configuration of the Mail Inbox ".$this->GetName()." instructs to create a new contact based on some default values, but this creation was not successful.<br/>\n";
 			$sBody .= "Check the contact's default values configured in the Mail Inbox.</p>\n";
-			$sBody .= "<p>The eMail was deleted from the mailbox.</p>\n";
+			$sBody .= $sLastAction;
+			$this->sLastError = "Failed to create a contact from the incoming eMail. Caller = ".$oEmail->sCallerEmail;
 			break;
 			
 			case 'rejected_attachments':
 			$sSubject = '[iTop] Failed to process attachment(s) for the incoming eMail - '.$oEmail->sSubject;
 			$sBody = "<p>Some attachments to the eMail were not processed because they are too big:</p>\n";
 			$sBody .= "<pre>".$sAdditionalErrorMessage."</pre>\n";
+			$sBody .= $sLastAction;
 			
 			$oRawEmail = null; // No original message in attachment
 			$this->Trace($sSubject."\n\n".$sBody);
@@ -521,17 +564,19 @@ EOF
 			default:
 			$sSubject = '[iTop] handle error';
 			$sBody = '<p>Unexpected error: '.$sErrorCode."</p>\n";
+			$sBody .= $sLastAction;
+			$this->sLastError = 'Unexpected error: '.$sErrorCode;
 		}
 		$sBody .= "<p>&nbsp;</p><p>Mail Inbox Configuration: ".$this->GetHyperlink()."</p>\n";
 		
-		if(($oRawEmail) && ($sTo != '') && ($sFrom != ''))
+		if(($sTo == '') || ($sFrom == ''))
+		{
+			$this->Trace("HandleError($sErrorCode): No forward configured for forwarding the email...(To: '$sTo', From: '$sFrom'), skipping.");
+		}
+		else if($oRawEmail)
 		{
 			$this->Trace($sSubject."\n\n".$sBody);
 			$oRawEmail->SendAsAttachment($sTo, $sFrom, $sSubject, $sBody);
-		}
-		else if($oRawEmail != null)
-		{
-			$this->Trace("HandleError($sErrorCode): Failed to forward the email...(To: '$sTo', From: '$sFrom').");
 		}
 	}
 	
