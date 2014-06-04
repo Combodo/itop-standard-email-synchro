@@ -19,7 +19,7 @@ class MailInboxStandard extends MailInboxBase
 		MetaModel::Init_Params($aParams);
 		MetaModel::Init_InheritAttributes();
 		MetaModel::Init_AddAttribute(new AttributeEnum("behavior", array("allowed_values"=>new ValueSetEnum('create_only,update_only,both'), "sql"=>"behavior", "default_value"=>'both', "is_null_allowed"=>false, "depends_on"=>array())));
-		MetaModel::Init_AddAttribute(new AttributeEnum("target_class", array("allowed_values"=>new ValueSetEnum('Incident,UserRequest'), "sql"=>"target_class", "default_value"=>'UserRequest', "is_null_allowed"=>false, "depends_on"=>array())));
+		MetaModel::Init_AddAttribute(new AttributeEnum("target_class", array("allowed_values"=> new ValueSetEnum('Incident,UserRequest,Change,RoutineChange,NormalChange,EmergencyChange,Problem'), "sql"=>"target_class", "default_value"=>'UserRequest', "is_null_allowed"=>false, "depends_on"=>array())));
 		MetaModel::Init_AddAttribute(new AttributeText("ticket_default_values", array("allowed_values"=>null, "sql"=>"ticket_default_values", "default_value"=>null, "is_null_allowed"=>true, "depends_on"=>array())));
 		MetaModel::Init_AddAttribute(new AttributeString("title_pattern", array("allowed_values"=>null, "sql"=>"title_pattern", "default_value"=>null, "is_null_allowed"=>true, "depends_on"=>array())));
 		MetaModel::Init_AddAttribute(new AttributeEnum("unknown_caller_behavior", array("allowed_values"=>new ValueSetEnum('create_contact,reject_email'), "sql"=>"unknown_caller_behavior", "default_value"=>'reject_email', "is_null_allowed"=>false, "depends_on"=>array())));
@@ -289,7 +289,10 @@ EOF
 		}
 		$oTicket = MetaModel::NewObject($this->Get('target_class'));
 		$oTicket->Set('org_id', $oCaller->Get('org_id'));
-		$oTicket->Set('caller_id', $oCaller->GetKey());
+		if (MetaModel::IsValidAttCode(get_class($oTicket), 'caller_id'))
+		{
+			$oTicket->Set('caller_id', $oCaller->GetKey());
+		}
 		if (MetaModel::IsValidAttCode(get_class($oTicket), 'origin'))
 		{
 			$oTicket->Set('origin', 'mail');
