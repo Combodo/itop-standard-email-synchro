@@ -29,6 +29,7 @@ class MailInboxStandard extends MailInboxBase
 		MetaModel::Init_AddAttribute(new AttributeEmailAddress("notify_errors_from", array("allowed_values"=>null, "sql"=>"notify_errors_from", "default_value"=>"", "is_null_allowed"=>true, "depends_on"=>array())));
 		MetaModel::Init_AddAttribute(new AttributeEnum("trace", array("allowed_values"=>new ValueSetEnum('yes,no'), "sql"=>"trace", "default_value"=>'no', "is_null_allowed"=>false, "depends_on"=>array())));
 		MetaModel::Init_AddAttribute(new AttributeLongText("debug_trace", array("allowed_values"=>null, "sql"=>"debug_trace", "default_value"=>null, "is_null_allowed"=>true, "depends_on"=>array())));
+		MetaModel::Init_AddAttribute(new AttributeEnum("email_storage", array("allowed_values"=>new ValueSetEnum('keep,delete'), "sql"=>"email_storage", "default_value"=>'keep', "is_null_allowed"=>false, "depends_on"=>array())));
 		
 		// Display lists
 		// Display lists
@@ -38,7 +39,7 @@ class MailInboxStandard extends MailInboxBase
 													'fieldset:MailInbox:Errors' => array('error_behavior', 'notify_errors_to', 'notify_errors_from'),
 											),
 											'col:col1' => array(
-													'fieldset:MailInbox:Behavior' => array( 'behavior', 'target_class', 'ticket_default_values', 'title_pattern'),
+													'fieldset:MailInbox:Behavior' => array( 'behavior', 'email_storage', 'target_class', 'ticket_default_values', 'title_pattern'),
 													'fieldset:MailInbox:Caller' => array('unknown_caller_behavior', 'caller_default_values'),
 											),
 										)); // Attributes to be displayed for the complete details
@@ -358,7 +359,17 @@ EOF
 		// Process attachments
 		$this->AddAttachments($oTicket, $oEmail, $oMyChange);
 		
-		$this->SetNextAction(EmailProcessor::NO_ACTION); // Ok, done		
+		if ($this->Get('email_storage') == 'delete')
+		{
+			// Remove the processed message from the mailbox
+			$this->Trace("Ticket created, deleting the source eMail '".$oEmail->sSubject."'");
+			$this->SetNextAction(EmailProcessor::DELETE_MESSAGE);		
+		}
+		else
+		{
+			// Keep the message in the mailbox
+			$this->SetNextAction(EmailProcessor::NO_ACTION);		
+		}
 		return $oTicket;
 	}
 	
@@ -430,8 +441,18 @@ EOF
 		{
 			$oTrigger->DoActivate($oTicket->ToArgs('this'));
 		}
-		
-		$this->SetNextAction(EmailProcessor::NO_ACTION); // Ok, done
+
+		if ($this->Get('email_storage') == 'delete')
+		{
+			// Remove the processed message from the mailbox
+			$this->Trace("Ticket updated, deleting the source eMail '".$oEmail->sSubject."'");
+			$this->SetNextAction(EmailProcessor::DELETE_MESSAGE);		
+		}
+		else
+		{
+			// Keep the message in the mailbox
+			$this->SetNextAction(EmailProcessor::NO_ACTION);		
+		}		
 		return $oTicket;		
 	}
 	

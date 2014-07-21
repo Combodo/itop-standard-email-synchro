@@ -23,6 +23,10 @@ Dict::Add('EN US', 'English', 'English', array(
 	'Class:MailInboxStandard/Attribute:behavior/Value:update_only' => 'Update existing Tickets',
 	'Class:MailInboxStandard/Attribute:behavior/Value:both' => 'Create or Update Tickets',
 
+	'Class:MailInboxStandard/Attribute:email_storage' => 'After processing the eMail',
+	'Class:MailInboxStandard/Attribute:email_storage/Value:keep' => 'Keep it on the mail server',
+	'Class:MailInboxStandard/Attribute:email_storage/Value:delete' => 'Delete it immediately',
+
 	'Class:MailInboxStandard/Attribute:target_class' => 'Ticket Class',
 	'Class:MailInboxStandard/Attribute:target_class/Value:Incident' => 'Incident',
 	'Class:MailInboxStandard/Attribute:target_class/Value:UserRequest' => 'User Request',
