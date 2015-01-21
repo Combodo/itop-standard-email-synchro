@@ -5,7 +5,7 @@
 
 SetupWebPage::AddModule(
 	__FILE__, // Path to the current file, all other file names are relative to the directory containing this file
-	'itop-standard-email-synchro/2.6.2',
+	'itop-standard-email-synchro/2.6.3',
 	array(
 		// Identification
 		//
@@ -15,7 +15,7 @@ SetupWebPage::AddModule(
 		// Setup
 		//
 		'dependencies' => array(
-			'combodo-email-synchro/1.0.0',
+			'combodo-email-synchro/2.6.5',
 			// no other dependency is listed, for backward 1.x compatibility... though this module uses implicitely the Ticket's derived classes...
 		),
 		'mandatory' => false,
@@ -46,6 +46,7 @@ SetupWebPage::AddModule(
 		//
 		'settings' => array(
 			// Module specific settings go here, if any
+			'inline_image_max_width' => '500', // Maximum width (in px) for displaying inline images
 			'ticket_log' => array('UserRequest' => 'public_log', 'Incident' => 'public_log'),
 		),
 	)
