@@ -308,11 +308,28 @@ EOF
 			$iMaxSize = $oAttDef->GetMaxSize();
 			$oTicket->Set('title', substr($oEmail->sSubject, 0, $iMaxSize));
 		}
+		
+		$aIgnoredAttachments = array();
+		
+		// Insert the remaining attachments so that we know their ID and can reference them in the message's body
+		
+		// Creating a CMDBChange is no longer needed in 2.0, but let's keep doing it for compatibility with 1.x
+		$oMyChange = MetaModel::NewObject("CMDBChange");
+		$oMyChange->Set("date", time());
+		$sUserString = CMDBChange::GetCurrentUserName();
+		$oMyChange->Set("userinfo", $sUserString);
+		$iChangeId = $oMyChange->DBInsert();
+		
+		$aAddedAttachments = $this->AddAttachments($oTicket, $oEmail, $oMyChange);  // Cannot insert them for real since the Ticket is not saved yet (we don't know its ID)
+																		// we'll have to call UpdateAttachments once the ticket is proerply saved
+		
 		$this->Trace("Email body format: ".$oEmail->sBodyFormat);
 		if ($oEmail->sBodyFormat == 'text/html')
 		{
+			$this->Trace("Managing inline images...");
+			$sBodyText = $this->ManageInlineImages($oEmail->sBodyText, $aAddedAttachments, $aIgnoredAttachments);
 			$this->Trace("Removing HTML tags...");
-			$sBodyText = $oEmail->StripTags();
+			$sBodyText = $oEmail->StripTags($sBodyText);
 		}
 		else
 		{
@@ -345,19 +362,13 @@ EOF
 				$aDefaultValues[$sAttCode] = $sValue;
 			}
 		}
-		$this->InitObjectFromDefaultValues($oTicket, $aDefaultValues);		
+		$this->InitObjectFromDefaultValues($oTicket, $aDefaultValues);
 		
-		// Creating a CMDBChange is no longer needed in 2.0, but let's keep doing it for compatibility with 1.x
-		$oMyChange = MetaModel::NewObject("CMDBChange");
-		$oMyChange->Set("date", time());
-		$sUserString = CMDBChange::GetCurrentUserName();
-		$oMyChange->Set("userinfo", $sUserString);
-		$iChangeId = $oMyChange->DBInsert();
 		$oTicket->DBInsertTracked($oMyChange);
 		$this->Trace("Ticket ".$oTicket->GetName()." created.");
 		
 		// Process attachments
-		$this->AddAttachments($oTicket, $oEmail, $oMyChange);
+		$this->UpdateAttachments($aAddedAttachments, $oTicket); // Now update the attachment since we know the ID of the ticket
 		
 		if ($this->Get('email_storage') == 'delete')
 		{
@@ -397,9 +408,29 @@ EOF
 		// Try to extract what's new from the message's body
 		$this->Trace("iTop Simple Email Synchro: Updating the iTop ticket ".$oTicket->GetName()." from eMail '".$oEmail->sSubject."'");
 
+		// Creating a CMDBChange is no longer needed in iTop 2.0, but let's keep doing it for compatibility with 1.x
+		$oMyChange = MetaModel::NewObject("CMDBChange");
+		$oMyChange->Set("date", time());
+		$sUserString = CMDBChange::GetCurrentUserName();
+		$oMyChange->Set("userinfo", $sUserString);
+		$oMyChange->DBInsert();
+		
+		// Process attachments
+		$aIgnoredAttachments = array();
+		$aAddedAttachments = $this->AddAttachments($oTicket, $oEmail, $oMyChange);
+		
 		$this->Trace("Email body format: ".$oEmail->sBodyFormat);
 		$this->Trace("Extracting the new part...");
-		$sBodyText = $oEmail->GetNewPart(); // GetNewPart always returns a plain text version of the message
+		if ($oEmail->sBodyFormat == 'text/html')
+		{
+			$this->Trace("Managing inline images...");
+			$sBodyText = $this->ManageInlineImages($oEmail->sBodyText, $aAddedAttachments, $aIgnoredAttachments);
+		}
+		else
+		{
+			$sBodyText = $oEmail->sBodyText;
+		}
+		$sBodyText = $oEmail->GetNewPart($sBodyText, $oEmail->sBodyFormat); // GetNewPart always returns a plain text version of the message
 		
 		$this->Trace($oEmail->sTrace);
 		// Write the log on behalf of the caller
@@ -408,6 +439,7 @@ EOF
 		{
 			$sCallerName = $oEmail->sCallerEmail;
 		}
+					
 		// Determine which field to update
 		$sAttCode = 'public_log';
 		$aAttCodes = MetaModel::GetModuleSetting('itop-standard-email-synchro', 'ticket_log', array('UserRequest' => 'public_log', 'Incident' => 'public_log'));
@@ -420,17 +452,8 @@ EOF
 		$oLog->AddLogEntry($sBodyText, $sCallerName);
 		$oTicket->Set($sAttCode, $oLog);
 
-		// Creating a CMDBChange is no longer needed in 2.0, but let's keep doing it for compatibility with 1.x
-		$oMyChange = MetaModel::NewObject("CMDBChange");
-		$oMyChange->Set("date", time());
-		$sUserString = CMDBChange::GetCurrentUserName();
-		$oMyChange->Set("userinfo", $sUserString);
-		$oMyChange->DBInsert();
 		$oTicket->DBUpdateTracked($oMyChange);			
 		$this->Trace("Ticket ".$oTicket->GetName()." updated.");
-					
-		// Process attachments
-		$this->AddAttachments($oTicket, $oEmail, $oMyChange);
 		
 		// If there are any TriggerOnMailUpdate defined, let's activate them
 		//
@@ -454,6 +477,57 @@ EOF
 			$this->SetNextAction(EmailProcessor::NO_ACTION);		
 		}		
 		return $oTicket;		
+	}
+
+	protected function ManageInlineImages($sBodyText, $aAddedAttachments)
+	{
+		// Search for inline images: i.e. <img tags containing an src="cid:...."
+		if (preg_match_all('/<img[^>]+src="cid:([^"]+)"/i', $sBodyText, $aMatches, PREG_OFFSET_CAPTURE))
+		{
+			$aInlineImages = array();
+			foreach ($aMatches[0] as $idx => $aInfo)
+			{
+				$aInlineImages[$idx] = array(
+					'position' => $aInfo[1]
+				);
+			}
+			foreach ($aMatches[1] as $idx => $aInfo)
+			{
+				$sCID = $aInfo[0];
+				if (!array_key_exists($sCID, $aAddedAttachments) && !array_key_exists($sCID, $aIgnoredAttachments))
+				{
+					$this->Trace("Info: inline image: $sCID not found as an attachment. Ignored.");
+				}
+				else if (array_key_exists($sCID, $aAddedAttachments))
+				{
+					$aInlineImages[$idx]['cid'] = $sCID;
+					$this->Trace("Inline image cid:$sCID stored as Attachment::".$aAddedAttachments[$sCID]->GetKey());
+				}
+			}
+			$sWholeText = $sBodyText;
+			$idx = count($aInlineImages);
+			// Insert the URLs to the attachments, just before the <img tag so that the hyperlink remains (as plain text) at the right position
+			// when the HTML tags will be stripped
+			// Start from the end of the text to preserve the positions of the <img tags AFTER the insertion
+			while ($idx > 0)
+			{
+				$idx --;
+				if (array_key_exists('cid', $aInlineImages[$idx]))
+				{
+					$sBefore = substr($sWholeText, 0, $aInlineImages[$idx]['position']);
+					$sAfter = substr($sWholeText, $aInlineImages[$idx]['position']);
+					$oAttachment = $aAddedAttachments[$aInlineImages[$idx]['cid']];
+					$sUrl = utils::GetAbsoluteUrlAppRoot().'pages/ajax.render.php?operation=download_document&class=Attachment&id='.$oAttachment->GetKey().'&field=contents';
+					$sWholeText = $sBefore.' '.$sUrl.' '. $sAfter;
+				}
+			}
+			$sBodyText = $sWholeText;
+		}
+		else
+		{
+			$this->Trace("Inline Images: no inline-image found in the message");
+		}
+		return $sBodyText;
 	}
 	
 	/**
@@ -641,5 +715,87 @@ class StdEmailSynchro extends ModuleHandlerAPI
 		}
 	}
 }
+
+/**
+ * Simple extension to turn the displayed URLs pointing to an attachment into an inline image
+ *
+ */
+class StdMailInboxPlugIn implements iApplicationUIExtension
+{
+	public function OnDisplayProperties($oObject, WebPage $oPage, $bEditMode = false)
+	{
+		if ($oObject instanceof Ticket)
+		{
+			$oPage->add_linked_stylesheet(utils::GetAbsoluteUrlModulesRoot().'itop-standard-email-synchro/magnific-popup.css');
+			$oPage->add_linked_script(utils::GetAbsoluteUrlModulesRoot().'itop-standard-email-synchro/jquery.magnific-popup.min.js');
+			$maxWidth = MetaModel::GetModuleSetting('itop-standard-email-synchro', 'inline_image_max_width', '');
+			if ($maxWidth !== '')
+			{
+				$sStyle = "style=\"max-width:{$maxWidth}px;cursor:zoom-in;\"";
+			}
+			else
+			{
+				$sStyle = "style=\"cursor:zoom-in;\"";
+			}
+			// replace all hyperlink with the appropriate format by an inline image
+			$oPage->add_ready_script(
+<<<EOF
+	$('#tab_00 a').each(function() {
+		var sUrl = this.href;
+		var sLabel = new String($(this).html());
+		sLabel = sLabel.replace(/&amp;/g, '&');
+		var regExpr = /pages\/ajax.render.php\?operation=download_document&class=Attachment/;
+	
+		if ((sUrl == sLabel) && (regExpr.exec(sUrl)))
+		{
+			$(this).replaceWith('<img class="inline-image" src="'+sUrl+'" href="'+sUrl+'" $sStyle></img>');
+		}
+			
+	});
+	$('.inline-image').magnificPopup({ 
+  		type: 'image'
+		
+	});
+EOF
+			);
+		}
+	}
+
+	public function OnDisplayRelations($oObject, WebPage $oPage, $bEditMode = false)
+	{
+	}
+
+	public function OnFormSubmit($oObject, $sFormPrefix = '')
+	{
+	}
+
+	public function OnFormCancel($sTempId)
+	{
+	}
+
+	public function EnumUsedAttributes($oObject)
+	{
+		return array();
+	}
+
+	public function GetIcon($oObject)
+	{
+		return '';
+	}
+
+	public function GetHilightClass($oObject)
+	{
+		// Possible return values are:
+		// HILIGHT_CLASS_CRITICAL, HILIGHT_CLASS_WARNING, HILIGHT_CLASS_OK, HILIGHT_CLASS_NONE
+		return HILIGHT_CLASS_NONE;
+	}
+
+	public function EnumAllowedActions(DBObjectSet $oSet)
+	{
+		// No action
+		return array();
+	}
+}
+
 // Register the background action for asynchronous execution in cron.php
 EmailBackgroundProcess::RegisterEmailProcessor('MailInboxesEmailProcessor');
