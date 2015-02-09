@@ -206,11 +206,11 @@ EOF
 		// First check if there are any iTop object mentioned in the headers of the eMail
 		$oTicket = $oEmail->oRelatedObject;
 		
-		if (($oTicket != null) && !($oTicket instanceof Ticket))
+		if (($oTicket != null) && !MetaModel::IsParentClass($this->Get('target_class'), get_class($oTicket)))
 		{
-			// The object referenced by the email is not a ticket !!
+			// The object referenced by the email is not a valid ticket !!
 			// => Forward the message and delete the ticket ??
-			$this->Trace("iTop Simple Email Synchro: WARNING the message $index ({$oEmail->sUIDL}) contains a reference to a valid iTop object that is NOT a ticket !");
+			$this->Trace("iTop Standard Email Synchro: WARNING the message $index ({$oEmail->sUIDL}) contains a reference to a valid iTop object of class ".get_class($oTicket)." that is NOT a of class ".$this->Get('target_class')."! Reference will be ignored.");
 			$oTicket = null;
 		}
 		
@@ -224,7 +224,7 @@ EOF
 				$iTicketId = 0;
 				sscanf($aMatches[1], '%d', $iTicketId);
 				$this->Trace("iTop Simple Email Synchro: Retrieving ticket ".$iTicketId." (match by subject pattern)...");
-				$oTicket = MetaModel::GetObject('Ticket', $iTicketId, false);
+				$oTicket = MetaModel::GetObject($this->Get('target_class'), $iTicketId, false);
 			}
 		}
 		
