@@ -320,8 +320,8 @@ EOF
 		$oMyChange->Set("userinfo", $sUserString);
 		$iChangeId = $oMyChange->DBInsert();
 		
-		$aAddedAttachments = $this->AddAttachments($oTicket, $oEmail, $oMyChange);  // Cannot insert them for real since the Ticket is not saved yet (we don't know its ID)
-																		// we'll have to call UpdateAttachments once the ticket is proerply saved
+		$aAddedAttachments = $this->AddAttachments($oTicket, $oEmail, $oMyChange, true, $aIgnoredAttachments);  // Cannot insert them for real since the Ticket is not saved yet (we don't know its ID)
+																												// we'll have to call UpdateAttachments once the ticket is properly saved
 		
 		$this->Trace("Email body format: ".$oEmail->sBodyFormat);
 		if ($oEmail->sBodyFormat == 'text/html')
@@ -417,7 +417,7 @@ EOF
 		
 		// Process attachments
 		$aIgnoredAttachments = array();
-		$aAddedAttachments = $this->AddAttachments($oTicket, $oEmail, $oMyChange);
+		$aAddedAttachments = $this->AddAttachments($oTicket, $oEmail, $oMyChange, true, $aIgnoredAttachments);
 		
 		$this->Trace("Email body format: ".$oEmail->sBodyFormat);
 		$this->Trace("Extracting the new part...");
@@ -479,7 +479,7 @@ EOF
 		return $oTicket;		
 	}
 
-	protected function ManageInlineImages($sBodyText, $aAddedAttachments)
+	protected function ManageInlineImages($sBodyText, $aAddedAttachments, $aIgnoredAttachments)
 	{
 		// Search for inline images: i.e. <img tags containing an src="cid:...."
 		if (preg_match_all('/<img[^>]+src="cid:([^"]+)"/i', $sBodyText, $aMatches, PREG_OFFSET_CAPTURE))
