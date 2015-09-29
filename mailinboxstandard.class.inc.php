@@ -409,6 +409,8 @@ EOF
 		if (!is_a($oTicket, $this->Get('target_class')))
 		{
 			$this->Trace("iTop Simple Email Synchro: Error: the incoming email refers to the ticket ".$oTicket->GetName()." of class ".get_class($oTicket).", but this mailbox is configured to process only tickets of class ".$this->Get('target_class'));
+			$this->SetNextAction(EmailProcessor::MARK_MESSAGE_AS_ERROR); // Keep the message in the mailbox, but marked as error
+			return;
 		}
 		
 		// Try to extract what's new from the message's body
