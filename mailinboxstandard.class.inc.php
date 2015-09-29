@@ -210,7 +210,7 @@ EOF
 		{
 			// The object referenced by the email is not a ticket !!
 			// => Forward the message and delete the ticket ??
-			$this->Trace("iTop Simple Email Synchro: WARNING the message $index ({$oEmail->sUIDL}) contains a reference to a valid iTop object that is NOT a ticket !");
+			$this->Trace("iTop Standard Email Synchro: WARNING the message $index ({$oEmail->sUIDL}) contains a reference to a valid iTop object that is NOT a ticket !");
 			$oTicket = null;
 		}
 		
@@ -404,6 +404,14 @@ EOF
 		{
 			$this->SetNextAction(EmailProcessor::MARK_MESSAGE_AS_ERROR); // Keep the message in the mailbox, but marked as error
 		}		
+		
+		// Check that the ticket is of the expected class
+		if (!is_a($oTicket, $this->Get('target_class')))
+		{
+			$this->Trace("iTop Simple Email Synchro: Error: the incoming email refers to the ticket ".$oTicket->GetName()." of class ".get_class($oTicket).", but this mailbox is configured to process only tickets of class ".$this->Get('target_class'));
+			$this->SetNextAction(EmailProcessor::MARK_MESSAGE_AS_ERROR); // Keep the message in the mailbox, but marked as error
+			return;
+		}
 		
 		// Try to extract what's new from the message's body
 		$this->Trace("iTop Simple Email Synchro: Updating the iTop ticket ".$oTicket->GetName()." from eMail '".$oEmail->sSubject."'");
