@@ -206,11 +206,11 @@ EOF
 		// First check if there are any iTop object mentioned in the headers of the eMail
 		$oTicket = $oEmail->oRelatedObject;
 		
-		if (($oTicket != null) && !MetaModel::IsParentClass($this->Get('target_class'), get_class($oTicket)))
+		if (($oTicket != null) && !($oTicket instanceof Ticket))
 		{
-			// The object referenced by the email is not a valid ticket !!
+			// The object referenced by the email is not a ticket !!
 			// => Forward the message and delete the ticket ??
-			$this->Trace("iTop Standard Email Synchro: WARNING the message $index ({$oEmail->sUIDL}) contains a reference to a valid iTop object of class ".get_class($oTicket)." that is NOT a of class ".$this->Get('target_class')."! Reference will be ignored.");
+			$this->Trace("iTop Standard Email Synchro: WARNING the message $index ({$oEmail->sUIDL}) contains a reference to a valid iTop object that is NOT a ticket !");
 			$oTicket = null;
 		}
 		
@@ -224,7 +224,7 @@ EOF
 				$iTicketId = 0;
 				sscanf($aMatches[1], '%d', $iTicketId);
 				$this->Trace("iTop Simple Email Synchro: Retrieving ticket ".$iTicketId." (match by subject pattern)...");
-				$oTicket = MetaModel::GetObject($this->Get('target_class'), $iTicketId, false);
+				$oTicket = MetaModel::GetObject('Ticket', $iTicketId, false);
 			}
 		}
 		
@@ -404,6 +404,14 @@ EOF
 		{
 			$this->SetNextAction(EmailProcessor::MARK_MESSAGE_AS_ERROR); // Keep the message in the mailbox, but marked as error
 		}		
+		
+		// Check that the ticket is of the expected class
+		if (!is_a($oTicket, $this->Get('target_class')))
+		{
+			$this->Trace("iTop Simple Email Synchro: Error: the incoming email refers to the ticket ".$oTicket->GetName()." of class ".get_class($oTicket).", but this mailbox is configured to process only tickets of class ".$this->Get('target_class'));
+			$this->SetNextAction(EmailProcessor::MARK_MESSAGE_AS_ERROR); // Keep the message in the mailbox, but marked as error
+			return;
+		}
 		
 		// Try to extract what's new from the message's body
 		$this->Trace("iTop Simple Email Synchro: Updating the iTop ticket ".$oTicket->GetName()." from eMail '".$oEmail->sSubject."'");
