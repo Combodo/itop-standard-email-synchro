@@ -1,6 +1,8 @@
 <?php
 class MailInboxStandard extends MailInboxBase
 {
+	protected static $aUndesiredSubjectPatterns = null;
+	
 	public static function Init()
 	{
 		$aParams = array
@@ -21,6 +23,7 @@ class MailInboxStandard extends MailInboxBase
 		MetaModel::Init_AddAttribute(new AttributeEnum("behavior", array("allowed_values"=>new ValueSetEnum('create_only,update_only,both'), "sql"=>"behavior", "default_value"=>'both', "is_null_allowed"=>false, "depends_on"=>array())));
 		MetaModel::Init_AddAttribute(new AttributeEnum("target_class", array("allowed_values"=> new ValueSetEnum('Incident,UserRequest,Change,RoutineChange,NormalChange,EmergencyChange,Problem'), "sql"=>"target_class", "default_value"=>'UserRequest', "is_null_allowed"=>false, "depends_on"=>array())));
 		MetaModel::Init_AddAttribute(new AttributeText("ticket_default_values", array("allowed_values"=>null, "sql"=>"ticket_default_values", "default_value"=>null, "is_null_allowed"=>true, "depends_on"=>array())));
+		MetaModel::Init_AddAttribute(new AttributeString("ticket_default_title", array("allowed_values"=>null, "sql"=>"ticket_default_title", "default_value"=>null, "is_null_allowed"=>true, "depends_on"=>array())));
 		MetaModel::Init_AddAttribute(new AttributeString("title_pattern", array("allowed_values"=>null, "sql"=>"title_pattern", "default_value"=>null, "is_null_allowed"=>true, "depends_on"=>array())));
 		MetaModel::Init_AddAttribute(new AttributeEnum("unknown_caller_behavior", array("allowed_values"=>new ValueSetEnum('create_contact,reject_email'), "sql"=>"unknown_caller_behavior", "default_value"=>'reject_email', "is_null_allowed"=>false, "depends_on"=>array())));
 		MetaModel::Init_AddAttribute(new AttributeText("caller_default_values", array("allowed_values"=>null, "sql"=>"caller_default_values", "default_value"=>null, "is_null_allowed"=>true, "depends_on"=>array())));
@@ -39,7 +42,7 @@ class MailInboxStandard extends MailInboxBase
 													'fieldset:MailInbox:Errors' => array('error_behavior', 'notify_errors_to', 'notify_errors_from'),
 											),
 											'col:col1' => array(
-													'fieldset:MailInbox:Behavior' => array( 'behavior', 'email_storage', 'target_class', 'ticket_default_values', 'title_pattern'),
+													'fieldset:MailInbox:Behavior' => array( 'behavior', 'email_storage', 'target_class', 'ticket_default_values', 'ticket_default_title', 'title_pattern'),
 													'fieldset:MailInbox:Caller' => array('unknown_caller_behavior', 'caller_default_values'),
 											),
 										)); // Attributes to be displayed for the complete details
@@ -135,7 +138,12 @@ EOF
 	{		
 		$this->Trace("Processing new eMail (index = $index)");
 		$oTicket = null;
-		
+		if ($this->IsUndesired($oEmail))
+		{
+			$oRawEmail = $oSource->GetMessage($index);
+			$this->HandleError($oEmail, 'undesired_message', $oRawEmail);
+			return null;
+		}
 		$sContactQuery = 'SELECT Contact WHERE email = :email';
 		$oSet = new DBObjectSet(DBObjectSearch::FromOQL($sContactQuery), array(), array('email' => $oEmail->sCallerEmail));
 		$sAdditionalDescription = '';
@@ -300,7 +308,9 @@ EOF
 		}
 		if ($oEmail->sSubject == '')
 		{
-			$oTicket->Set('title', 'No subject');
+			$sDefaultSubject = ($this->Get('ticket_default_title') == '') ? Dict::S('MailInbox:NoSubject') : $this->Get('ticket_default_title');
+			$this->Trace("The incoming email has no subject, the ticket's title will be set to: '$sDefaultSubject'");
+			$oTicket->Set('title', $sDefaultSubject);
 		}
 		else
 		{
@@ -539,6 +549,30 @@ EOF
 	}
 	
 	/**
+	 * Check (based on a set of patterns tested against the subject of the email) if the email is considered as "undesired"
+	 * @param EmailMessage $oEmail The message to check
+	 * @return boolean
+	 */
+	protected function IsUndesired(EmailMessage $oEmail)
+	{
+		$bRet = false; 
+		if (self::$aUndesiredSubjectPatterns == null)
+		{
+			self::$aUndesiredSubjectPatterns = MetaModel::GetModuleSetting('combodo-email-synchro', 'undesired-subject-patterns', array());
+		}
+		foreach(self::$aUndesiredSubjectPatterns as $sPattern)
+		{
+			if (preg_match($sPattern, $oEmail->sSubject))
+			{
+				$this->Trace("The message '{$oEmail->sSubject}' is considered as undesired, since it matches '$sPattern'.");
+				return true;
+			}
+		}
+		$this->Trace("The message '{$oEmail->sSubject}' is NOT considered as undesired.");
+		return false; // No match, the message is NOT undesired
+	}
+	
+	/**
 	 * Error handler... what to do in case of error ??
 	 * @param EmailMessage $oEmail can be null in case of decoding error (like message too big)
 	 * @param string $sErrorCode
@@ -667,6 +701,23 @@ EOF
 			}
 			break;
 				
+			case 'undesired_message':
+			$sSubject = '[iTop] Undesired message - '.$oEmail->sSubject;
+			$sBody = "<p>The attached message was rejected because it is considered as undesired, based on the 'undesired_subject_patterns' specified in the iTop configuration file.</p>\n";
+			$sBody .= $sLastAction;
+			
+			// Send the email now...
+			if(($sTo != '') && ($sFrom != ''))
+			{
+				$oEmailToSend = new Email();
+		  		$oEmailToSend->SetRecipientTO($sTo);
+		  		$oEmailToSend->SetSubject($sSubject);
+		  		$oEmailToSend->SetBody($sBody, 'text/html');	
+		  		$oEmailToSend->SetRecipientFrom($sFrom);
+		  		$oEmailToSend->Send($aIssues, true /* bForceSynchronous */, null /* $oLog */);
+			}
+			break;
+			
 			default:
 			$sSubject = '[iTop] handle error';
 			$sBody = '<p>Unexpected error: '.$sErrorCode."</p>\n";

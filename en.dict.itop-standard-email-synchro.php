@@ -32,6 +32,7 @@ Dict::Add('EN US', 'English', 'English', array(
 	'Class:MailInboxStandard/Attribute:target_class/Value:UserRequest' => 'User Request',
 
 	'Class:MailInboxStandard/Attribute:ticket_default_values' => 'Ticket Default Values',
+	'Class:MailInboxStandard/Attribute:ticket_default_title' => 'Default Title (if subject is empty)',
 	'Class:MailInboxStandard/Attribute:title_pattern+' => 'Pattern to match in the subject',
 	'Class:MailInboxStandard/Attribute:title_pattern' => 'Title Pattern',
 	'Class:MailInboxStandard/Attribute:title_pattern?' => 'Use PCRE syntax, including starting and ending delimiters',
@@ -59,4 +60,5 @@ Dict::Add('EN US', 'English', 'English', array(
 	'Menu:MailInboxes+' => 'Configuration of Inboxes to scan for Incoming eMails',
 	'MailInboxStandard:DebugTrace' => 'Debug Trace',
 	'MailInboxStandard:DebugTraceNotActive' => 'Activate the debug on this Inbox to see the debug trace here.',
+	'MailInbox:NoSubject' => 'No subject',
 ));
