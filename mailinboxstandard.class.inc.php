@@ -282,7 +282,7 @@ EOF
 	 */
 	public function CreateTicketFromEmail(EmailMessage $oEmail, Contact $oCaller)
 	{
-			// In case of error (exception...) set the behavior
+		// In case of error (exception...) set the behavior
 		if ($this->Get('error_behavior') == 'delete')
 		{
 			$this->SetNextAction(EmailProcessor::DELETE_MESSAGE); // Remove the message from the mailbox
@@ -332,30 +332,62 @@ EOF
 		
 		$aAddedAttachments = $this->AddAttachments($oTicket, $oEmail, $oMyChange, true, $aIgnoredAttachments);  // Cannot insert them for real since the Ticket is not saved yet (we don't know its ID)
 																												// we'll have to call UpdateAttachments once the ticket is properly saved
+		$oAttDef = MetaModel::GetAttributeDef(get_class($oTicket), 'description');
+		$bForPlainText = true; // Target format is plain text (by default)
+		if ($oAttDef instanceof AttributeHTML)
+		{
+			// Target format is HTML
+			$bForPlainText = false;
+		}
+		else if ($oAttDef instanceof AttributeText)
+		{
+			$aParams = $oAttDef->GetParams();
+			if (array_key_exists('format', $aParams) && ($aParams['format'] == 'html'))
+			{
+				// Target format is HTML
+				$bForPlainText = false;
+			}
+		}
+		$this->Trace("Target format for 'description': ".($bForPlainText ? 'text/plain' : 'text/html'));
 		
 		$this->Trace("Email body format: ".$oEmail->sBodyFormat);
 		if ($oEmail->sBodyFormat == 'text/html')
 		{
 			$this->Trace("Managing inline images...");
-			$sBodyText = $this->ManageInlineImages($oEmail->sBodyText, $aAddedAttachments, $aIgnoredAttachments);
-			$this->Trace("Removing HTML tags...");
-			$sBodyText = $oEmail->StripTags($sBodyText);
+			$sBodyText = $this->ManageInlineImages($oEmail->sBodyText, $aAddedAttachments, $aIgnoredAttachments, $bForPlainText);
+			if ($bForPlainText)
+			{
+				if (method_exists('utils', 'HtmlToText'))
+				{
+					$this->Trace("Removing HTML tags using utils::HtmlToText...");
+					$sBodyText = utils::HtmlToText($sBodyText);
+				}
+				else
+				{
+					$this->Trace("Removing HTML tags using StripTags...");
+					$sBodyText = $oEmail->StripTags($sBodyText);
+				}
+			}
 		}
 		else
 		{
 			$sBodyText = $oEmail->sBodyText;
+			if ((!$bForPlainText) && method_exists('utils', 'TextToHtml'))
+			{
+				$this->Trace("Converting text to HTML using utils::TextToHTML...");
+				$sBodyText = utils::TextToHtml($sBodyText);
+			}
 		}
 		$sTicketDescription = $sBodyText;
 		if (empty($sTicketDescription))
 		{
 			$sTicketDescription = 'No description provided.';
 		}
-		$oAttDef = MetaModel::GetAttributeDef(get_class($oTicket), 'description');
 		$iMaxSize = $oAttDef->GetMaxSize();
 		$bTextTruncated = false;
 		if (strlen($sTicketDescription) > $iMaxSize)
 		{
-			$oEmail->aAttachments[] = array('content' => $sTicketDescription, 'filename' => 'original message.txt', 'mimeType' => 'text/plain');
+			$oEmail->aAttachments[] = array('content' => $sTicketDescription, 'filename' => ($bForPlainText ? 'original message.txt' : 'original message.html'), 'mimeType' => ($bForPlainText ? 'text/plain' : 'text/html'));
 		}
 		$oTicket->Set('description', $this->FitTextIn($sTicketDescription, $iMaxSize - 1000)); // Keep some room just in case...
 		
@@ -497,7 +529,7 @@ EOF
 		return $oTicket;		
 	}
 
-	protected function ManageInlineImages($sBodyText, $aAddedAttachments, $aIgnoredAttachments)
+	protected function ManageInlineImages($sBodyText, $aAddedAttachments, $aIgnoredAttachments, $bForPlainText = true)
 	{
 		// Search for inline images: i.e. <img tags containing an src="cid:...."
 		if (preg_match_all('/<img[^>]+src="cid:([^"]+)"/i', $sBodyText, $aMatches, PREG_OFFSET_CAPTURE))
@@ -519,25 +551,53 @@ EOF
 				else if (array_key_exists($sCID, $aAddedAttachments))
 				{
 					$aInlineImages[$idx]['cid'] = $sCID;
-					$this->Trace("Inline image cid:$sCID stored as Attachment::".$aAddedAttachments[$sCID]->GetKey());
+					$this->Trace("Inline image cid:$sCID stored as ".get_class($aAddedAttachments[$sCID])."::".$aAddedAttachments[$sCID]->GetKey());
 				}
 			}
-			$sWholeText = $sBodyText;
-			$idx = count($aInlineImages);
-			// Insert the URLs to the attachments, just before the <img tag so that the hyperlink remains (as plain text) at the right position
-			// when the HTML tags will be stripped
-			// Start from the end of the text to preserve the positions of the <img tags AFTER the insertion
-			while ($idx > 0)
+			if (!defined('ATTACHMENT_DOWNLOAD_URL'))
 			{
-				$idx --;
-				if (array_key_exists('cid', $aInlineImages[$idx]))
+				define('ATTACHMENT_DOWNLOAD_URL', 'pages/ajax.render.php?operation=download_document&class=Attachment&field=contents&id=');
+			}
+			if ($bForPlainText)
+			{
+				// The target form is text/plain, so the HTML tags will be stripped
+				// Insert the URLs to the attachments, just before the <img tag so that the hyperlink remains (as plain text) at the right position
+				// when the HTML tags will be stripped
+				// Start from the end of the text to preserve the positions of the <img tags AFTER the insertion
+				$sWholeText = $sBodyText;
+				$idx = count($aInlineImages);
+				while ($idx > 0)
 				{
-					$sBefore = substr($sWholeText, 0, $aInlineImages[$idx]['position']);
-					$sAfter = substr($sWholeText, $aInlineImages[$idx]['position']);
-					$oAttachment = $aAddedAttachments[$aInlineImages[$idx]['cid']];
-					$sUrl = utils::GetAbsoluteUrlAppRoot().'pages/ajax.render.php?operation=download_document&class=Attachment&id='.$oAttachment->GetKey().'&field=contents';
-					$sWholeText = $sBefore.' '.$sUrl.' '. $sAfter;
+					$idx --;
+					if (array_key_exists('cid', $aInlineImages[$idx]))
+					{
+						$sBefore = substr($sWholeText, 0, $aInlineImages[$idx]['position']);
+						$sAfter = substr($sWholeText, $aInlineImages[$idx]['position']);
+						$oAttachment = $aAddedAttachments[$aInlineImages[$idx]['cid']];
+						$sUrl = utils::GetAbsoluteUrlAppRoot().ATTACHMENT_DOWNLOAD_URL.$oAttachment->GetKey();
+						$sWholeText = $sBefore.' '.$sUrl.' '. $sAfter;
+					}
 				}
+			}
+			else
+			{
+				// The target format is text/html, keep the formatting, but just change the URLs
+				$aSearches = array();
+				$aReplacements = array();
+				foreach($aAddedAttachments as $sCID => $oAttachment)
+				{
+					$aSearches[] = 'src="cid:'.$sCID.'"';
+					if (class_exists('InlineImage') && ($oAttachment instanceof InlineImage))
+					{
+						// Inline images have a special download URL requiring the 'secret' token
+						$aReplacements[] = 'src="'.utils::GetAbsoluteUrlAppRoot().INLINEIMAGE_DOWNLOAD_URL.$oAttachment->GetKey().'&s='.$oAttachment->Get('secret').'"';
+					}
+					else
+					{
+						$aReplacements[] = 'src="'.utils::GetAbsoluteUrlAppRoot().ATTACHMENT_DOWNLOAD_URL.$oAttachment->GetKey().'"';
+					}
+				}
+				$sWholeText = str_replace($aSearches, $aReplacements, $sBodyText);
 			}
 			$sBodyText = $sWholeText;
 		}
