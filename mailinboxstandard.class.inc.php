@@ -33,6 +33,8 @@ class MailInboxStandard extends MailInboxBase
 		MetaModel::Init_AddAttribute(new AttributeEnum("trace", array("allowed_values"=>new ValueSetEnum('yes,no'), "sql"=>"trace", "default_value"=>'no', "is_null_allowed"=>false, "depends_on"=>array())));
 		MetaModel::Init_AddAttribute(new AttributeLongText("debug_trace", array("allowed_values"=>null, "sql"=>"debug_trace", "default_value"=>null, "is_null_allowed"=>true, "depends_on"=>array())));
 		MetaModel::Init_AddAttribute(new AttributeEnum("email_storage", array("allowed_values"=>new ValueSetEnum('keep,delete'), "sql"=>"email_storage", "default_value"=>'keep', "is_null_allowed"=>false, "depends_on"=>array())));
+		MetaModel::Init_AddAttribute(new AttributeEnum("import_additional_contacts", array("allowed_values"=>new ValueSetEnum('never,only_on_creation,only_on_update,always'), "sql"=>"import_additional_contacts", "default_value"=>'never', "is_null_allowed"=>false, "depends_on"=>array())));
+		MetaModel::Init_AddAttribute(new AttributeText("stimuli", array("allowed_values"=>null, "sql"=>"stimuli", "default_value"=>null, "is_null_allowed"=>true, "depends_on"=>array())));
 		
 		// Display lists
 		// Display lists
@@ -42,8 +44,9 @@ class MailInboxStandard extends MailInboxBase
 													'fieldset:MailInbox:Errors' => array('error_behavior', 'notify_errors_to', 'notify_errors_from'),
 											),
 											'col:col1' => array(
-													'fieldset:MailInbox:Behavior' => array( 'behavior', 'email_storage', 'target_class', 'ticket_default_values', 'ticket_default_title', 'title_pattern'),
+													'fieldset:MailInbox:Behavior' => array( 'behavior', 'email_storage', 'target_class', 'ticket_default_values', 'ticket_default_title', 'title_pattern', 'stimuli'),
 													'fieldset:MailInbox:Caller' => array('unknown_caller_behavior', 'caller_default_values'),
+													'fieldset:MailInbox:OtherContacts' => array('import_additional_contacts'),
 											),
 										)); // Attributes to be displayed for the complete details
 		MetaModel::Init_SetZListItems('list', array('server', 'mailbox','protocol', 'active')); // Attributes to be displayed for a list
@@ -99,7 +102,6 @@ EOF
 			$sStampedText = date('Y-m-d H:i:s').' - '.$sText."\n";
 			$this->Set('debug_trace', substr($this->Get('debug_trace').$sStampedText, -$iMaxTraceLength));
 
-			// TODO: store the Trace in a way that does not keep track of history !!!
 			// Creating a CMDBChange is no longer needed in 2.0, but let's keep doing it for compatibility with 1.x
 			$oMyChange = MetaModel::NewObject("CMDBChange");
 			$oMyChange->Set("date", time());
@@ -140,10 +142,67 @@ EOF
 		$oTicket = null;
 		if ($this->IsUndesired($oEmail))
 		{
-			$oRawEmail = $oSource->GetMessage($index);
-			$this->HandleError($oEmail, 'undesired_message', $oRawEmail);
+			$this->HandleError($oEmail, 'undesired_message', $oEmail->oRawEmail);
 			return null;
 		}
+
+		// Search if the caller email is an existing contact in iTop
+		$oCaller = $this->FindCaller($oEmail);
+		
+		// Check whether we need to create a new ticket or to update an existing one
+		$oTicket = $this->GetRelatedTicket($oEmail);
+
+		if (($oCaller == null) && ($oTicket == null))
+		{
+			// Cannot create a ticket if the caller is unknown
+			return null;
+		}
+		
+		switch($this->Get('behavior'))
+		{
+			case 'create_only':
+			$oTicket = $this->CreateTicketFromEmail($oEmail, $oCaller);
+			break;
+			
+			case 'update_only':
+			if (!is_object($oTicket))
+			{
+				// No ticket associated with the incoming email, nothing to update, reject the email
+				$this->HandleError($oEmail, 'nothing_to_update', $oEmail->oRawEmail);
+			}
+			else
+			{
+				// Update the ticket with the incoming eMail
+				$this->UpdateTicketFromEmail($oTicket, $oEmail, $oCaller);
+			}
+			break;
+			
+			default: // both: update or create as needed
+			if (!is_object($oTicket))
+			{
+				// Let's create a new ticket
+				$oTicket = $this->CreateTicketFromEmail($oEmail, $oCaller);
+			}
+			else
+			{
+				// Update the ticket with the incoming eMail
+				$this->UpdateTicketFromEmail($oTicket, $oEmail, $oCaller);
+			}
+			break;			
+		}
+		
+		return $oTicket;
+	}
+	
+	/**
+	 * Search if the caller email is an existing contact in iTop, if not may create it
+	 * depending on the mailinbox setting.
+	 * {@inheritDoc}
+	 * @see MailInboxBase::FindCaller()
+	 */
+	protected function FindCaller(EmailMessage $oEmail)
+	{
+		$oCaller = null;
 		$sContactQuery = 'SELECT Contact WHERE email = :email';
 		$oSet = new DBObjectSet(DBObjectSearch::FromOQL($sContactQuery), array(), array('email' => $oEmail->sCallerEmail));
 		$sAdditionalDescription = '';
@@ -159,8 +218,7 @@ EOF
 			{
 				case 'reject_email':
 				$this->Trace('No contact found for the email address "'.$oEmail->sCallerEmail.'", the ticket will NOT be created');
-				$oRawEmail = $oSource->GetMessage($index);
-				$this->HandleError($oEmail, 'unknown_contact', $oRawEmail);
+				$this->HandleError($oEmail, 'unknown_contact', $oEmail->oRawEmail);
 				return null;
 				break;
 				
@@ -196,8 +254,7 @@ EOF
 				{
 					$this->Trace('Failed to create a Person for the email address "'.$oEmail->sCallerEmail.'".');
 					$this->Trace($e->getMessage());
-					$oRawEmail = $oSource->GetMessage($index);
-					$this->HandleError($oEmail, 'failed_to_create_contact', $oRawEmail);
+					$this->HandleError($oEmail, 'failed_to_create_contact', $oEmail->oRawEmail);
 					return null;
 				}
 				
@@ -210,17 +267,18 @@ EOF
 			$oCaller = $oSet->Fetch();
 		}
 		
-		// Check whether we need to create a new ticket or to update an existing one
-		// First check if there are any iTop object mentioned in the headers of the eMail
-		$oTicket = $oEmail->oRelatedObject;
-		
-		if (($oTicket != null) && !($oTicket instanceof Ticket))
-		{
-			// The object referenced by the email is not a ticket !!
-			// => Forward the message and delete the ticket ??
-			$this->Trace("iTop Standard Email Synchro: WARNING the message $index ({$oEmail->sUIDL}) contains a reference to a valid iTop object that is NOT a ticket !");
-			$oTicket = null;
-		}
+		return $oCaller;
+	}
+	
+	/**
+	 * 
+	 * {@inheritDoc}
+	 * @see MailInboxBase::GetRelatedTicket()
+	 */
+	protected function GetRelatedTicket(EmailMessage $oEmail)
+	{
+		// First check if there is any iTop object mentioned in the headers of the eMail
+		$oTicket = parent::GetRelatedTicket($oEmail);
 		
 		if ($oTicket == null)
 		{
@@ -234,41 +292,7 @@ EOF
 				$this->Trace("iTop Simple Email Synchro: Retrieving ticket ".$iTicketId." (match by subject pattern)...");
 				$oTicket = MetaModel::GetObject('Ticket', $iTicketId, false);
 			}
-		}
-		
-		switch($this->Get('behavior'))
-		{
-			case 'create_only':
-			$oTicket = $this->CreateTicketFromEmail($oEmail, $oCaller);
-			break;
-			
-			case 'update_only':
-			if (!is_object($oTicket))
-			{
-				// No ticket associated with the incoming email, nothing to update, reject the email
-				$oRawEmail = $oSource->GetMessage($index);
-				$this->HandleError($oEmail, 'nothing_to_update', $oRawEmail);
-			}
-			else
-			{
-				// Update the ticket with the incoming eMail
-				$this->UpdateTicketFromEmail($oTicket, $oEmail, $oCaller);
-			}
-			break;
-			
-			default: // both: update or create as needed
-			if (!is_object($oTicket))
-			{
-				// Let's create a new ticket
-				$oTicket = $this->CreateTicketFromEmail($oEmail, $oCaller);
-			}
-			else
-			{
-				// Update the ticket with the incoming eMail
-				$this->UpdateTicketFromEmail($oTicket, $oEmail, $oCaller);
-			}
-			break;			
-		}
+		}		
 		
 		return $oTicket;
 	}
@@ -322,16 +346,8 @@ EOF
 		$aIgnoredAttachments = array();
 		
 		// Insert the remaining attachments so that we know their ID and can reference them in the message's body
-		
-		// Creating a CMDBChange is no longer needed in 2.0, but let's keep doing it for compatibility with 1.x
-		$oMyChange = MetaModel::NewObject("CMDBChange");
-		$oMyChange->Set("date", time());
-		$sUserString = CMDBChange::GetCurrentUserName();
-		$oMyChange->Set("userinfo", $sUserString);
-		$iChangeId = $oMyChange->DBInsert();
-		
-		$aAddedAttachments = $this->AddAttachments($oTicket, $oEmail, $oMyChange, true, $aIgnoredAttachments);  // Cannot insert them for real since the Ticket is not saved yet (we don't know its ID)
-																												// we'll have to call UpdateAttachments once the ticket is properly saved
+		$aAddedAttachments = $this->AddAttachments($oTicket, $oEmail, true, $aIgnoredAttachments);  // Cannot insert them for real since the Ticket is not saved yet (we don't know its ID)
+																									// we'll have to call UpdateAttachments once the ticket is properly saved
 		$oAttDef = MetaModel::GetAttributeDef(get_class($oTicket), 'description');
 		$bForPlainText = true; // Target format is plain text (by default)
 		if ($oAttDef instanceof AttributeHTML)
@@ -349,46 +365,17 @@ EOF
 			}
 		}
 		$this->Trace("Target format for 'description': ".($bForPlainText ? 'text/plain' : 'text/html'));
-		
 		$this->Trace("Email body format: ".$oEmail->sBodyFormat);
-		if ($oEmail->sBodyFormat == 'text/html')
-		{
-			$this->Trace("Managing inline images...");
-			$sBodyText = $this->ManageInlineImages($oEmail->sBodyText, $aAddedAttachments, $aIgnoredAttachments, $bForPlainText);
-			if ($bForPlainText)
-			{
-				if (method_exists('utils', 'HtmlToText'))
-				{
-					$this->Trace("Removing HTML tags using utils::HtmlToText...");
-					$sBodyText = utils::HtmlToText($sBodyText);
-				}
-				else
-				{
-					$this->Trace("Removing HTML tags using StripTags...");
-					$sBodyText = $oEmail->StripTags($sBodyText);
-				}
-			}
-		}
-		else
-		{
-			$sBodyText = $oEmail->sBodyText;
-			if ((!$bForPlainText) && method_exists('utils', 'TextToHtml'))
-			{
-				$this->Trace("Converting text to HTML using utils::TextToHTML...");
-				$sBodyText = utils::TextToHtml($sBodyText);
-			}
-		}
-		$sTicketDescription = $sBodyText;
-		if (empty($sTicketDescription))
-		{
-			$sTicketDescription = 'No description provided.';
-		}
+		
+		$sTicketDescription = $this->BuildDescription($oEmail, $aAddedAttachments, $aIgnoredAttachments, $bForPlainText);
+
 		$iMaxSize = $oAttDef->GetMaxSize();
 		$bTextTruncated = false;
 		if (strlen($sTicketDescription) > $iMaxSize)
 		{
 			$oEmail->aAttachments[] = array('content' => $sTicketDescription, 'filename' => ($bForPlainText ? 'original message.txt' : 'original message.html'), 'mimeType' => ($bForPlainText ? 'text/plain' : 'text/html'));
 		}
+		
 		$oTicket->Set('description', $this->FitTextIn($sTicketDescription, $iMaxSize - 1000)); // Keep some room just in case...
 		
 		// Default values
@@ -406,12 +393,149 @@ EOF
 		}
 		$this->InitObjectFromDefaultValues($oTicket, $aDefaultValues);
 		
-		$oTicket->DBInsertTracked($oMyChange);
+		if (($this->Get('import_additional_contacts') == 'always') || ($this->Get('import_additional_contacts') == 'only_on_creation'))
+		{
+			$this->AddAdditionalContacts($oTicket, $oEmail);
+		}
+		
+		$this->BeforeInsertTicket($oTicket, $oEmail, $oCaller);
+		$oTicket->DBInsert();
 		$this->Trace("Ticket ".$oTicket->GetName()." created.");
+		$this->AfterInsertTicket($oTicket, $oEmail, $oCaller, $aAddedAttachments);
 		
+		return $oTicket;
+	}
+	
+	/**
+	 * Build the 'description' of the ticket when creating a new ticket
+	 * @param EmailMessage $oEmail The incoming Email
+	 * @param bool $bForPlainText True if the desired output format is plain text, false if HTML
+	 * @return string
+	 */
+	protected function BuildDescription(EmailMessage $oEmail, $aAddedAttachments, $aIgnoredAttachments, $bForPlainText)
+	{
+		$sTicketDescription = '';
+		if ($oEmail->sBodyFormat == 'text/html')
+		{
+			// Original message is in HTML
+			$this->Trace("Managing inline images...");
+			$sTicketDescription = $this->ManageInlineImages($oEmail->sBodyText, $aAddedAttachments, $aIgnoredAttachments, $bForPlainText);
+			if ($bForPlainText)
+			{
+				$this->Trace("Converting HTML to text using utils::HtmlToText...");
+				$sTicketDescription = utils::HtmlToText($sBodyText);
+			}
+		}
+		else
+		{
+			// Original message is in plain text
+			$sTicketDescription = utils::TextToHtml($oEmail->sBodyText);
+			if (!$bForPlainText)
+			{
+				$this->Trace("Converting text to HTML using utils::TextToHtml...");
+				$sTicketDescription = utils::TextToHtml($oEmail->sBodyText);
+			}
+		}
+
+		if (empty($sTicketDescription))
+		{
+			$sTicketDescription = 'No description provided.';
+		}
+		
+		return $sTicketDescription;
+	}
+	
+	/**
+	 * Add the contacts in To: or CC: as additional contacts to the ticket (if they exist in the DB)
+	 * @param Ticket $oTicket
+	 * @param EmailMessage $oEmail
+	 */
+	protected function AddAdditionalContacts(Ticket $oTicket, EmailMessage $oEmail)
+	{
+		$oContactsSet = $oTicket->Get('contacts_list');
+		$aExistingContacts = array();
+		while($oLnk = $oContactsSet->Fetch())
+		{
+			$aExistingContacts[$oLnk->Get('contact_id')] = true;
+		}
+		$aAdditionalContacts = $oEmail->aTos + $oEmail->aCCs; // Take both the To: and CC:
+		foreach($aAdditionalContacts as $aInfo)
+		{
+			$sCallerEmail = $oTicket->Get('caller_id->email');
+			// Exclude the caller from the additional contacts
+			if ($aInfo['email'] != $sCallerEmail)
+			{
+				$oContact = $this->FindAdditionalContact($aInfo['email']);
+				if (($oContact != null) && !array_key_exists($oContact->GetKey(), $aExistingContacts))
+				{
+					$oLnk = new lnkContactToTicket();
+					$oLnk->Set('contact_id', $oContact->GetKey());
+					$oContactsSet->AddObject($oLnk);
+				}
+			}
+			else
+			{
+				$this->Trace('Skipping "'.$sEmail.'" from the email address in To/CC since it is the same as the caller\'s email.');
+			}
+		}
+		$oTicket->Set('contacts_list', $oContactsSet);
+	}
+	
+	/**
+	 * Search if the CC email is an existing contact in iTop, if so return it, otherwise ignore it
+	 * @param $sEmail string The email address to seach
+	 * @return Contact | null
+	 */
+	protected function FindAdditionalContact($sEmail)
+	{
+		$oContact = null;
+		$sContactQuery = 'SELECT Contact WHERE email = :email';
+		$oSet = new DBObjectSet(DBObjectSearch::FromOQL($sContactQuery), array(), array('email' => $sEmail));
+		switch($oSet->Count())
+		{
+			case 1:
+			// Ok, the caller was found in iTop
+			$oContact = $oSet->Fetch();
+			$this->Trace('Found Contact::'.$oContact->GetKey().' ('.$oContact->GetName().') from the email address in To/CC "'.$sEmail.'".');
+			break;
+			
+			case 0:
+			$this->Trace('No contact found with the email address in CC "'.$sEmail.'", email address ignored.');
+			break;
+			
+			default:
+			$this->Trace('Found '.$oSet->Count().' contacts with the same email address in To/CC "'.$sEmail.'", the first one will be used...');
+			// Multiple contacts with the same email address !!!
+			$oCaller = $oSet->Fetch();
+		}
+		return $oContact;
+	}
+	
+	/**
+	 * Handler called just before inserting the ticket into the database
+	 * Overload this method to adjust the values of the ticket at your will
+	 * @param Ticket $oTicket
+	 * @param EmailMessage $oEmail
+	 * @param Contact $oCaller
+	 */
+	protected function BeforeInsertTicket(Ticket $oTicket, EmailMessage $oEmail, Contact $oCaller)
+	{
+		// Default implementation: do nothing
+	}
+	
+	/**
+	 * Finalize the processing after the insertion of the ticket in the database
+	 * @param Ticket $oTicket The ticket being written
+	 * @param EmailMessage $oEmail The source email
+	 * @param Contact $oCaller The caller for this ticket, as passed to CreateTicket
+	 * @param array $aAddedAttachments The array of attachments added to the ticket
+	 */
+	protected function AfterInsertTicket(Ticket $oTicket, EmailMessage $oEmail, Contact $oCaller, $aAddedAttachments)
+	{
 		// Process attachments
-		$this->UpdateAttachments($aAddedAttachments, $oTicket); // Now update the attachment since we know the ID of the ticket
+		$this->UpdateAttachments($aAddedAttachments, $oTicket); // Now update the attachments since we know the ID of the ticket
 		
+		// Shall we delete the source email immediately?
 		if ($this->Get('email_storage') == 'delete')
 		{
 			// Remove the processed message from the mailbox
@@ -422,10 +546,8 @@ EOF
 		{
 			// Keep the message in the mailbox
 			$this->SetNextAction(EmailProcessor::NO_ACTION);		
-		}
-		return $oTicket;
+		}		
 	}
-	
 	
 	/**
 	 * Actual update of a ticket from the incoming email. Overload this method
@@ -458,29 +580,12 @@ EOF
 		// Try to extract what's new from the message's body
 		$this->Trace("iTop Simple Email Synchro: Updating the iTop ticket ".$oTicket->GetName()." from eMail '".$oEmail->sSubject."'");
 
-		// Creating a CMDBChange is no longer needed in iTop 2.0, but let's keep doing it for compatibility with 1.x
-		$oMyChange = MetaModel::NewObject("CMDBChange");
-		$oMyChange->Set("date", time());
-		$sUserString = CMDBChange::GetCurrentUserName();
-		$oMyChange->Set("userinfo", $sUserString);
-		$oMyChange->DBInsert();
 		
 		// Process attachments
 		$aIgnoredAttachments = array();
-		$aAddedAttachments = $this->AddAttachments($oTicket, $oEmail, $oMyChange, true, $aIgnoredAttachments);
+		$aAddedAttachments = $this->AddAttachments($oTicket, $oEmail, true, $aIgnoredAttachments);
 		
-		$this->Trace("Email body format: ".$oEmail->sBodyFormat);
-		$this->Trace("Extracting the new part...");
-		if ($oEmail->sBodyFormat == 'text/html')
-		{
-			$this->Trace("Managing inline images...");
-			$sBodyText = $this->ManageInlineImages($oEmail->sBodyText, $aAddedAttachments, $aIgnoredAttachments);
-		}
-		else
-		{
-			$sBodyText = $oEmail->sBodyText;
-		}
-		$sBodyText = $oEmail->GetNewPart($sBodyText, $oEmail->sBodyFormat); // GetNewPart always returns a plain text version of the message
+		$sCaseLogEntry = $this->BuildCaseLogEntry($oEmail, $aAddedAttachments, $aIgnoredAttachments);
 		
 		$this->Trace($oEmail->sTrace);
 		// Write the log on behalf of the caller
@@ -499,14 +604,110 @@ EOF
 		}
 		
 		$oLog = $oTicket->Get($sAttCode);
-		$oLog->AddLogEntry($sBodyText, $sCallerName);
+		$oLog->AddLogEntry($sCaseLogEntry, $sCallerName);
 		$oTicket->Set($sAttCode, $oLog);
-
-		$oTicket->DBUpdateTracked($oMyChange);			
-		$this->Trace("Ticket ".$oTicket->GetName()." updated.");
 		
+		if (($this->Get('import_additional_contacts') == 'always') || ($this->Get('import_additional_contacts') == 'only_on_update'))
+		{
+			$this->AddAdditionalContacts($oTicket, $oEmail);
+		}
+		$this->BeforeUpdateTicket($oTicket, $oEmail, $oCaller);
+		$oTicket->DBUpdate();			
+		$this->Trace("Ticket ".$oTicket->GetName()." updated.");
+		$this->AfterUpdateTicket($oTicket, $oEmail, $oCaller);
+				
+		return $oTicket;		
+	}
+	
+	/**
+	 * Build the text/html to be inserted in the case log when the ticket is updated
+	 * Starting with iTop 2.3.0, the format is always HTML
+	 * @param EmailMessage $oEmail
+	 * @return string The HTML text to be inserted in the case log
+	 */
+	protected function BuildCaseLogEntry(EmailMessage $oEmail, $aAddedAttachments, $aIgnoredAttachments)
+	{
+		$sCaseLogEntry = '';
+		$this->Trace("Email body format: ".$oEmail->sBodyFormat);
+		if ($oEmail->sBodyFormat == 'text/html')
+		{
+			$this->Trace("Extracting the new part using GetNewPartHTML...");
+			$sCaseLogEntry = $oEmail->GetNewPartHTML($oEmail->sBodyText);
+			if (strip_tags($sCaseLogEntry) == '')
+			{
+				// No new part (only blank tags)... we'd better use the whole text of the message
+				$sCaseLogEntry = $oEmail->sBodyText;
+			}
+			$this->Trace("Managing inline images...");
+			$sCaseLogEntry = $this->ManageInlineImages($sCaseLogEntry, $aAddedAttachments, $aIgnoredAttachments, false /* $bForPlainText */);
+		}
+		else
+		{
+			$this->Trace("Extracting the new part using GetNewPart...");
+			$sCaseLogEntry = $oEmail->GetNewPart($oEmail->sBodyText, $oEmail->sBodyFormat); // GetNewPart always returns a plain text version of the message
+		}
+		return $sCaseLogEntry;
+	}
+
+	/**
+	 * Handler called before updating a ticket in the database
+	 * Overload this method to alter the ticket at your will
+	 * @param Ticket $oTicket
+	 * @param EmailMessage $oEmail
+	 * @param Contact $oCaller
+	 */
+	protected function BeforeUpdateTicket(Ticket $oTicket, EmailMessage $oEmail, Contact $oCaller)
+	{
+		// Default implementation: do nothing
+	}
+	
+	/**
+	 * Read the configuration in the 'stimuli' field (format: <state_code>:<stimulus_code>, one per line)
+	 * and apply the corresponding stimulus according to the current state of the ticket
+	 * @param ticket $oTicket
+	 */
+	protected function ApplyConfiguredStimulus(ticket $oTicket)
+	{
+		$sConf = $this->Get('stimuli');
+		$aConf = explode("\n", $sConf);
+		$aStateToStimulus = array();
+		foreach($aConf as $sLine)
+		{
+			if (preg_match('/^([^:]+):(.*)$/', $sLine, $aMatches))
+			{
+				$sState = trim($aMatches[1]);
+				$sStimulus = trim($aMatches[2]);
+				$aStateToStimulus[$sState] = $sStimulus;
+			}
+			else
+			{
+				$this->Trace('Invalid line in the "stimuli" configuration: "'.$sLine.'". The expected format for each line is <state_code>:<stimulus_code>');
+			}
+		}
+		if (array_key_exists($oTicket->GetState(), $aStateToStimulus))
+		{
+			$sStimulusCode = $aStateToStimulus[$oTicket->GetState()];
+			$this->Trace('Applying the stimulus: '.$sStimulusCode.' for the ticket in state: '.$oTicket->GetState());
+			try
+			{
+				$oTicket->ApplyStimulus($sStimulusCode);
+			}
+			catch(Exception $e)
+			{
+				$this->Trace('ApplyStimulus failed: '.$e->getMessage());
+			}
+		}
+	}
+	
+	/**
+	 * Finalize the processing after the update of the ticket in the database
+	 * @param Ticket $oTicket The ticket being written
+	 * @param EmailMessage $oEmail The source email
+	 * @param Contact $oCaller The caller for this ticket, as passed to UpdateTicket
+	 */
+	protected function AfterUpdateTicket(Ticket $oTicket, EmailMessage $oEmail, Contact $oCaller)
+	{
 		// If there are any TriggerOnMailUpdate defined, let's activate them
-		//
 		$aClasses = MetaModel::EnumParentClasses(get_class($oTicket), ENUM_PARENT_CLASSES_ALL);
 		$sClassList = implode(", ", CMDBSource::Quote($aClasses));
 		$oSet = new DBObjectSet(DBObjectSearch::FromOQL("SELECT TriggerOnMailUpdate AS t WHERE t.target_class IN ($sClassList)"));
@@ -515,6 +716,10 @@ EOF
 			$oTrigger->DoActivate($oTicket->ToArgs('this'));
 		}
 
+		// Apply a stimulus if needed, will write the ticket to the database, may launch triggers, etc...
+		$this->ApplyConfiguredStimulus($oTicket);
+		
+		// Shall we keep the email or delete it immediately?
 		if ($this->Get('email_storage') == 'delete')
 		{
 			// Remove the processed message from the mailbox
@@ -525,10 +730,9 @@ EOF
 		{
 			// Keep the message in the mailbox
 			$this->SetNextAction(EmailProcessor::NO_ACTION);		
-		}		
-		return $oTicket;		
+		}
 	}
-
+	
 	protected function ManageInlineImages($sBodyText, $aAddedAttachments, $aIgnoredAttachments, $bForPlainText = true)
 	{
 		// Search for inline images: i.e. <img tags containing an src="cid:...."
@@ -624,7 +828,7 @@ EOF
 		{
 			if (preg_match($sPattern, $oEmail->sSubject))
 			{
-				$this->Trace("The message '{$oEmail->sSubject}' is considered as undesired, since it matches '$sPattern'.");
+				$this->Trace("The message '{$oEmail->sSubject}' IS considered as undesired, since it matches '$sPattern'.");
 				return true;
 			}
 		}
@@ -820,101 +1024,3 @@ EOF
 	}
 }
 
-// Adding an entry in the admin menu
-
-class StdEmailSynchro extends ModuleHandlerAPI
-{
-	public static function OnMenuCreation()
-	{
-		// Add an item in the admin menus
-		if (UserRights::IsAdministrator())
-		{
-			$oAdminMenu = new MenuGroup('AdminTools', 80 /* fRank */);
-			new OQLMenuNode('MailInboxes', 'SELECT MailInboxStandard', $oAdminMenu->GetIndex(), 20 /* fRank */, true);
-		}
-	}
-}
-
-/**
- * Simple extension to turn the displayed URLs pointing to an attachment into an inline image
- *
- */
-class StdMailInboxPlugIn implements iApplicationUIExtension
-{
-	public function OnDisplayProperties($oObject, WebPage $oPage, $bEditMode = false)
-	{
-		if ($oObject instanceof Ticket)
-		{
-			$oPage->add_linked_stylesheet(utils::GetAbsoluteUrlModulesRoot().'itop-standard-email-synchro/magnific-popup.css');
-			$oPage->add_linked_script(utils::GetAbsoluteUrlModulesRoot().'itop-standard-email-synchro/jquery.magnific-popup.min.js');
-			$maxWidth = MetaModel::GetModuleSetting('itop-standard-email-synchro', 'inline_image_max_width', '');
-			if ($maxWidth !== '')
-			{
-				$sStyle = "style=\"max-width:{$maxWidth}px;cursor:zoom-in;\"";
-			}
-			else
-			{
-				$sStyle = "style=\"cursor:zoom-in;\"";
-			}
-			// replace all hyperlink with the appropriate format by an inline image
-			$oPage->add_ready_script(
-<<<EOF
-	$('#tab_00 a').each(function() {
-		var sUrl = this.href;
-		var sLabel = new String($(this).html());
-		sLabel = sLabel.replace(/&amp;/g, '&');
-		var regExpr = /pages\/ajax.render.php\?operation=download_document&class=Attachment/;
-	
-		if ((sUrl == sLabel) && (regExpr.exec(sUrl)))
-		{
-			$(this).replaceWith('<img class="inline-image" src="'+sUrl+'" href="'+sUrl+'" $sStyle></img>');
-		}
-			
-	});
-	$('.inline-image').magnificPopup({ 
-  		type: 'image'
-		
-	});
-EOF
-			);
-		}
-	}
-
-	public function OnDisplayRelations($oObject, WebPage $oPage, $bEditMode = false)
-	{
-	}
-
-	public function OnFormSubmit($oObject, $sFormPrefix = '')
-	{
-	}
-
-	public function OnFormCancel($sTempId)
-	{
-	}
-
-	public function EnumUsedAttributes($oObject)
-	{
-		return array();
-	}
-
-	public function GetIcon($oObject)
-	{
-		return '';
-	}
-
-	public function GetHilightClass($oObject)
-	{
-		// Possible return values are:
-		// HILIGHT_CLASS_CRITICAL, HILIGHT_CLASS_WARNING, HILIGHT_CLASS_OK, HILIGHT_CLASS_NONE
-		return HILIGHT_CLASS_NONE;
-	}
-
-	public function EnumAllowedActions(DBObjectSet $oSet)
-	{
-		// No action
-		return array();
-	}
-}
-
-// Register the background action for asynchronous execution in cron.php
-EmailBackgroundProcess::RegisterEmailProcessor('MailInboxesEmailProcessor');

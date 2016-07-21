@@ -37,6 +37,10 @@ Dict::Add('FR FR', 'French', 'Français', array(
 	'Class:MailInboxStandard/Attribute:title_pattern' => 'Recherche dans l\'objet du mail (RegExp)',
 	'Class:MailInboxStandard/Attribute:title_pattern?' => 'Utilisez la syntaxe PCRE avec les délimiteurs de début et de fin',
 
+	'Class:MailInboxStandard/Attribute:stimuli' => 'Stimuli à appliquer',
+	'Class:MailInboxStandard/Attribute:stimuli+' => 'Appliquer un stimulus quand le ticket est dans un état donné',
+	'Class:MailInboxStandard/Attribute:stimuli?' => 'Utilisez le format <code_etat>:<code_stimulus>',
+		
 	'Class:MailInboxStandard/Attribute:unknown_caller_behavior' => 'Comportement pour les contacts inconnus',
 	'Class:MailInboxStandard/Attribute:unknown_caller_behavior/Value:create_contact' => 'Créer un nouvelle Personne',
 	'Class:MailInboxStandard/Attribute:unknown_caller_behavior/Value:reject_email' => 'Rejeter l\'eMail',
@@ -44,7 +48,13 @@ Dict::Add('FR FR', 'French', 'Français', array(
 	'Class:MailInboxStandard/Attribute:trace' => 'Activer la trace',
 	'Class:MailInboxStandard/Attribute:trace/Value:yes' => 'Oui',
 	'Class:MailInboxStandard/Attribute:trace/Value:no' => 'Non',
-
+	
+	'Class:MailInboxStandard/Attribute:import_additional_contacts' => 'Ajouter des contacts (To, CC)',
+	'Class:MailInboxStandard/Attribute:import_additional_contacts/Value:never' => 'Jamais',
+	'Class:MailInboxStandard/Attribute:import_additional_contacts/Value:only_on_creation' => 'Lors de la création d\'un nouveau Ticket',
+	'Class:MailInboxStandard/Attribute:import_additional_contacts/Value:only_on_update' => 'Lors de la mise à jour d\'un Ticket existant',
+	'Class:MailInboxStandard/Attribute:import_additional_contacts/Value:always' => 'Toujours',
+		
 	'Class:MailInboxStandard/Attribute:caller_default_values' => "Valeurs par défaut pour la nouvelle Personne",
 	'Class:MailInboxStandard/Attribute:debug_log' => 'Traces de Debug',
 	'Class:MailInboxStandard/Attribute:error_behavior' => 'Comportement',
@@ -56,6 +66,7 @@ Dict::Add('FR FR', 'French', 'Français', array(
 	'MailInbox:Behavior' => 'Comportement',
 	'MailInbox:Caller' => 'Contacts inconnus',
 	'MailInbox:Errors' => 'eMails en erreur',
+	'MailInbox:OtherContacts' => 'Contacts Additionnels',
 	'Menu:MailInboxes' => 'Gestion des Boîtes Mail',
 	'Menu:MailInboxes+' => 'Configuration des Boîtes Mails à scanner',
 	'MailInboxStandard:DebugTrace' => 'Trace de Debug',
