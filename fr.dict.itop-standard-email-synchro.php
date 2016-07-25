@@ -42,7 +42,7 @@ Dict::Add('FR FR', 'French', 'Français', array(
 	'Class:MailInboxStandard/Attribute:stimuli?' => 'Utilisez le format <code_etat>:<code_stimulus>',
 		
 	'Class:MailInboxStandard/Attribute:unknown_caller_behavior' => 'Comportement pour les contacts inconnus',
-	'Class:MailInboxStandard/Attribute:unknown_caller_behavior/Value:create_contact' => 'Créer un nouvelle Personne',
+	'Class:MailInboxStandard/Attribute:unknown_caller_behavior/Value:create_contact' => 'Créer une nouvelle Personne',
 	'Class:MailInboxStandard/Attribute:unknown_caller_behavior/Value:reject_email' => 'Rejeter l\'eMail',
 
 	'Class:MailInboxStandard/Attribute:trace' => 'Activer la trace',

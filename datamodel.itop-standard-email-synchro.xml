@@ -587,7 +587,7 @@ EOF
 		{
 			$aExistingContacts[$oLnk->Get('contact_id')] = true;
 		}
-		$aAdditionalContacts = $oEmail->aTos + $oEmail->aCCs; // Take both the To: and CC:
+		$aAdditionalContacts = array_merge($oEmail->aTos, $oEmail->aCCs); // Take both the To: and CC:, no actual merge since the keys of the arrays are numeric (i.e. 0, 1, 2...)
 		foreach($aAdditionalContacts as $aInfo)
 		{
 			$sCallerEmail = $oTicket->Get('caller_id->email');
@@ -633,7 +633,7 @@ EOF
 			break;
 			
 			case 0:
-			$this->Trace('No contact found with the email address in CC "'.$sEmail.'", email address ignored.');
+			$this->Trace('No contact found with the email address in To/CC "'.$sEmail.'", email address ignored.');
 			break;
 			
 			default:
@@ -844,14 +844,87 @@ EOF
 		if (array_key_exists($oTicket->GetState(), $aStateToStimulus))
 		{
 			$sStimulusCode = $aStateToStimulus[$oTicket->GetState()];
-			$this->Trace('Applying the stimulus: '.$sStimulusCode.' for the ticket in state: '.$oTicket->GetState());
-			try
+			$this->Trace('About to apply the stimulus: '.$sStimulusCode.' for the ticket in state: '.$oTicket->GetState());
+			
+			// Check that applying the stimulus will not break the data integrity constaints (mandatory, must change)
+			$aTransitions = $oTicket->EnumTransitions();
+			$aStimuli = MetaModel::EnumStimuli($sClass);
+			$bCanApplyStimulus = true;
+			if (!isset($aTransitions[$sStimulusCode]))
 			{
-				$oTicket->ApplyStimulus($sStimulusCode);
+				$bCanApplyStimulus = false;
+				$this->Trace('The Stimulus '.$sStimulusCode.' for '.get_class($oTicket).' in state '.$oTicket->GetState().' has no effect (no transition). Ignored.');
 			}
-			catch(Exception $e)
+			else
 			{
-				$this->Trace('ApplyStimulus failed: '.$e->getMessage());
+				
+				$aTransitionDef = $aTransitions[$sStimulusCode];
+				$sTargetState = $aTransitionDef['target_state'];
+				$aTargetStates = MetaModel::EnumStates(get_class($oTicket));
+				$aTargetStateDef = $aTargetStates[$sTargetState];
+				$aExpectedAttributes = $aTargetStateDef['attribute_list'];
+				foreach($aExpectedAttributes as $sAttCode => $iExpectCode)
+				{
+					$oAttDef = MetaModel::GetAttributeDef($sClass, $sAttCode);
+					if (($iExpectCode & OPT_ATT_MANDATORY) && ($oAttDef->IsNull($oTicket->Get($sAttCode))))
+					{
+						// Check if there is just one possible value, in which case, use it				
+						$aArgs = array('this' => $oTicket);
+						// If the field is mandatory, set it to the only possible value
+						if ($oAttDef->IsExternalKey())
+						{
+							$oAllowedValues = MetaModel::GetAllowedValuesAsObjectSet(get_class($oTicket), $sAttCode, $aArgs);
+							if ($oAllowedValues->Count() == 1)
+							{
+								$oRemoteObj = $oAllowedValues->Fetch();
+								$oTicket->Set($sAttCode, $oRemoteObj->GetKey());
+								$this->Trace('Setting the mandatory External Key '.$sAttCode.' to the only allowed value: '.$oRemoteObj->GetKey());
+							}
+							else
+							{
+								$this->Trace('Cannot apply the stimulus since the attribute '.$sAttCode.' is mandatory in the target state '.$sTargetState.' and is neither currently set nor has just one allowed value.');
+								$bCanApplyStimulus = false;
+							}
+						}
+						else
+						{
+							$aAllowedValues = MetaModel::GetAllowedValues_att(get_class($oTicket), $sAttCode, $aArgs);
+							if (count($aAllowedValues) == 1)
+							{
+								$aValues = array_keys($aAllowedValues);
+								$oTicket->Set($sAttCode, $aValues[0]);
+								$this->Trace('Setting the mandatory attribute '.$sAttCode.' to the only allowed value: '.(string)$aValues[0]);
+							}
+							else
+							{
+								$this->Trace('Cannot apply the stimulus since the attribute '.$sAttCode.' is mandatory in the target state '.$sTargetState.' and is neither currently set nor has just one allowed value.');
+								$bCanApplyStimulus = false;
+							}
+						}
+					}
+					if ($iExpectCode & OPT_ATT_MUSTCHANGE)
+					{
+						$this->Trace('Cannot apply the stimulus since the value of the attribute '.$sAttCode.' must be modified (manually) during the transition to the target state '.$sTargetState.'.');
+						$bCanApplyStimulus = false;
+					}
+				}
+			}
+			
+			if ($bCanApplyStimulus)
+			{
+				try
+				{
+					$this->Trace('Actually applying the stimulus: '.$sStimulusCode.' for the ticket in state: '.$oTicket->GetState());
+					$oTicket->ApplyStimulus($sStimulusCode);
+				}
+				catch(Exception $e)
+				{
+					$this->Trace('ApplyStimulus failed: '.$e->getMessage());
+				}
+			}
+			else
+			{
+				$this->Trace('ApplyStimulus ignored.');
 			}
 		}
 	}]]></code>
@@ -989,11 +1062,8 @@ EOF
           <code><![CDATA[	protected function IsUndesired(EmailMessage $oEmail)
 	{
 		$bRet = false; 
-		if (self::$aUndesiredSubjectPatterns == null)
-		{
-			self::$aUndesiredSubjectPatterns = MetaModel::GetModuleSetting('combodo-email-synchro', 'undesired-subject-patterns', array());
-		}
-		foreach(self::$aUndesiredSubjectPatterns as $sPattern)
+		$aUndesiredSubjectPatterns = MetaModel::GetModuleSetting('combodo-email-synchro', 'undesired-subject-patterns', array());
+		foreach($aUndesiredSubjectPatterns as $sPattern)
 		{
 			if (preg_match($sPattern, $oEmail->sSubject))
 			{
