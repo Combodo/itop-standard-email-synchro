@@ -633,7 +633,7 @@ EOF
 			break;
 			
 			case 0:
-			$this->Trace('No contact found with the email address in CC "'.$sEmail.'", email address ignored.');
+			$this->Trace('No contact found with the email address in To/CC "'.$sEmail.'", email address ignored.');
 			break;
 			
 			default:
