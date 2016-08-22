@@ -848,7 +848,6 @@ EOF
 			
 			// Check that applying the stimulus will not break the data integrity constaints (mandatory, must change)
 			$aTransitions = $oTicket->EnumTransitions();
-			$aStimuli = MetaModel::EnumStimuli($sClass);
 			$bCanApplyStimulus = true;
 			if (!isset($aTransitions[$sStimulusCode]))
 			{
@@ -865,7 +864,7 @@ EOF
 				$aExpectedAttributes = $aTargetStateDef['attribute_list'];
 				foreach($aExpectedAttributes as $sAttCode => $iExpectCode)
 				{
-					$oAttDef = MetaModel::GetAttributeDef($sClass, $sAttCode);
+					$oAttDef = MetaModel::GetAttributeDef(get_class($oTicket), $sAttCode);
 					if (($iExpectCode & OPT_ATT_MANDATORY) && ($oAttDef->IsNull($oTicket->Get($sAttCode))))
 					{
 						// Check if there is just one possible value, in which case, use it				
