@@ -604,7 +604,7 @@ EOF
 			}
 			else
 			{
-				$this->Trace('Skipping "'.$sEmail.'" from the email address in To/CC since it is the same as the caller\'s email.');
+				$this->Trace('Skipping "'.$sCallerEmail.'" from the email address in To/CC since it is the same as the caller\'s email.');
 			}
 		}
 		$oTicket->Set('contacts_list', $oContactsSet);
