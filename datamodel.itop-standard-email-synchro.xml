@@ -257,16 +257,15 @@ EOF
 
 		// Search if the caller email is an existing contact in iTop
 		$oCaller = $this->FindCaller($oEmail);
-		
+		if ($oCaller === null)
+		{
+			// Cannot create/update a ticket if the caller is unknown
+			return null;
+		}
+
 		// Check whether we need to create a new ticket or to update an existing one
 		$oTicket = $this->GetRelatedTicket($oEmail);
 
-		if (($oCaller == null) && ($oTicket == null))
-		{
-			// Cannot create a ticket if the caller is unknown
-			return null;
-		}
-		
 		switch($this->Get('behavior'))
 		{
 			case 'create_only':
@@ -330,7 +329,7 @@ EOF
 			switch($this->Get('unknown_caller_behavior'))
 			{
 				case 'reject_email':
-				$this->Trace('No contact found for the email address "'.$oEmail->sCallerEmail.'", the ticket will NOT be created');
+				$this->Trace('No contact found for the email address "'.$oEmail->sCallerEmail.'", the email will not be processed');
 				$this->HandleError($oEmail, 'unknown_contact', $oEmail->oRawEmail);
 				return null;
 				break;
@@ -548,7 +547,7 @@ EOF
 			if ($bForPlainText)
 			{
 				$this->Trace("Converting HTML to text using utils::HtmlToText...");
-				$sTicketDescription = utils::HtmlToText($sBodyText);
+				$sTicketDescription = utils::HtmlToText($oEmail->sBodyText);
 			}
 		}
 		else
