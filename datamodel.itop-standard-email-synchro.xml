@@ -972,8 +972,9 @@ EOF
           <type>Overload-DBObject</type>
           <code><![CDATA[	protected function ManageInlineImages($sBodyText, $aAddedAttachments, $aIgnoredAttachments, $bForPlainText = true)
 	{
-		// Search for inline images: i.e. <img tags containing an src="cid:...."
-		if (preg_match_all('/<img[^>]+src="cid:([^"]+)"/i', $sBodyText, $aMatches, PREG_OFFSET_CAPTURE))
+		// Search for inline images: i.e. <img tags containing an src="cid:...." or without double quotes e.g. src=cid:xyzxyzx
+		// Note: (?: ... ) is used for grouping the alternative without creating a "matching group"
+		if (preg_match_all('/<img[^>]+src=(?:"cid:([^"]+)"|cid:([^ >]+))[^>]*>/i', $sBodyText, $aMatches, PREG_OFFSET_CAPTURE))
 		{
 			$aInlineImages = array();
 			foreach ($aMatches[0] as $idx => $aInfo)
@@ -1036,6 +1037,16 @@ EOF
 					else
 					{
 						$aReplacements[] = 'src="'.utils::GetAbsoluteUrlAppRoot().ATTACHMENT_DOWNLOAD_URL.$oAttachment->GetKey().'"';
+					}
+					$aSearches[] = 'src=cid:'.$sCID; // Same without quotes
+					if (class_exists('InlineImage') && ($oAttachment instanceof InlineImage))
+					{
+						// Inline images have a special download URL requiring the 'secret' token
+						$aReplacements[] = 'src="'.utils::GetAbsoluteUrlAppRoot().INLINEIMAGE_DOWNLOAD_URL.$oAttachment->GetKey().'&s='.$oAttachment->Get('secret').'" '; // Beware we need to add a space at the end
+					}
+					else
+					{
+						$aReplacements[] = 'src="'.utils::GetAbsoluteUrlAppRoot().ATTACHMENT_DOWNLOAD_URL.$oAttachment->GetKey().'" '; // Beware we need to add a space at the end
 					}
 				}
 				$sWholeText = str_replace($aSearches, $aReplacements, $sBodyText);
