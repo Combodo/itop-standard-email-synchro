@@ -1099,6 +1099,7 @@ EOF
 	{
 		$sTo = $this->Get('notify_errors_to');
 		$sFrom = $this->Get('notify_errors_from');
+		// The behavior is overriden in case of undesired_message
 		if ($this->Get('error_behavior') == 'delete')
 		{
 			$this->SetNextAction(EmailProcessor::DELETE_MESSAGE); // Remove the message from the mailbox
@@ -1109,7 +1110,8 @@ EOF
 			$this->SetNextAction(EmailProcessor::MARK_MESSAGE_AS_ERROR); // Keep the message in the mailbox, but marked as error
 			$sLastAction = "<p>The eMail is marked as error and will be ignored in further processing of the mailbox.</p>\n";
 		}
-		
+		$bFeedback = true;
+		$sBody = "";
 		switch($sErrorCode)
 		{
 			case 'unknown_contact':
@@ -1219,20 +1221,16 @@ EOF
 			break;
 				
 			case 'undesired_message':
-			$sSubject = '[iTop] Undesired message - '.$oEmail->sSubject;
-			$sBody = "<p>The attached message was rejected because it is considered as undesired, based on the 'undesired_subject_patterns' specified in the iTop configuration file.</p>\n";
-			$sBody .= $sLastAction;
-			
-			// Send the email now...
-			if(($sTo != '') && ($sFrom != ''))
+			if (MetaModel::GetModuleSetting('combodo-email-synchro', 'undesired-purge-delay', 7) == 0)
 			{
-				$oEmailToSend = new Email();
-		  		$oEmailToSend->SetRecipientTO($sTo);
-		  		$oEmailToSend->SetSubject($sSubject);
-		  		$oEmailToSend->SetBody($sBody, 'text/html');	
-		  		$oEmailToSend->SetRecipientFrom($sFrom);
-		  		$oEmailToSend->Send($aIssues, true /* bForceSynchronous */, null /* $oLog */);
+			    $this->SetNextAction(EmailProcessor::DELETE_MESSAGE); // immediate delete when delay is 0
 			}
+			else
+			{
+                $this->SetNextAction(EmailProcessor::MARK_MESSAGE_AS_UNDESIRED); // Keep the message in the mailbox, but marked as undesired
+            }
+            $this->sLastError = 'Undesired email';
+            $bFeedback = false; // No feedback on undesired emails
 			break;
 			
 			default:
@@ -1241,16 +1239,20 @@ EOF
 			$sBody .= $sLastAction;
 			$this->sLastError = 'Unexpected error: '.$sErrorCode;
 		}
-		$sBody .= "<p>&nbsp;</p><p>Mail Inbox Configuration: ".$this->GetHyperlink()."</p>\n";
-		
-		if(($sTo == '') || ($sFrom == ''))
+
+		if ($bFeedback)
 		{
-			$this->Trace("HandleError($sErrorCode): No forward configured for forwarding the email...(To: '$sTo', From: '$sFrom'), skipping.");
-		}
-		else if($oRawEmail)
-		{
-			$this->Trace($sSubject."\n\n".$sBody);
-			$oRawEmail->SendAsAttachment($sTo, $sFrom, $sSubject, $sBody);
+		    $sBody .= "<p>&nbsp;</p><p>Mail Inbox Configuration: ".$this->GetHyperlink()."</p>\n";
+
+		    if(($sTo == '') || ($sFrom == ''))
+            {
+                $this->Trace("HandleError($sErrorCode): No forward configured for forwarding the email...(To: '$sTo', From: '$sFrom'), skipping.");
+            }
+            else if($oRawEmail)
+            {
+                $this->Trace($sSubject."\n\n".$sBody);
+                $oRawEmail->SendAsAttachment($sTo, $sFrom, $sSubject, $sBody);
+            }
 		}
 	}]]></code>
         </method>
