@@ -25,6 +25,7 @@ SetupWebPage::AddModule(
 		//
 		'datamodel' => array(
 			'stdemailsynchro.class.inc.php',
+			'model.itop-standard-email-synchro.php',
 		),
 		'webservice' => array(),
 		'data.struct' => array(),
