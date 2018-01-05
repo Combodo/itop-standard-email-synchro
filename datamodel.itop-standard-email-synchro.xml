@@ -417,9 +417,12 @@ EOF
           <comment><![CDATA[/**
 	 * Actual creation of the ticket from the incoming email. Overload this method
 	 * to implement your own behavior, if needed
+	 *
 	 * @param EmailMessage $oEmail The decoded incoming email
 	 * @param Contact $oCaller The contact corresponding to the "From" email address
+	 *
 	 * @return Ticket the created ticket or null in case of failure
+	 * @throws \Exception if invalid target_class
 	 */]]></comment>
           <static>false</static>
           <access>public</access>
@@ -458,26 +461,26 @@ EOF
 		}
 		else
 		{
-			$oAttDef = MetaModel::GetAttributeDef(get_class($oTicket), 'title');
-			$iMaxSize = $oAttDef->GetMaxSize();
-			$oTicket->Set('title', substr($oEmail->sSubject, 0, $iMaxSize));
+			$oTicketTitleAttDef = MetaModel::GetAttributeDef(get_class($oTicket), 'title');
+			$iTitleMaxSize = $oTicketTitleAttDef->GetMaxSize();
+			$oTicket->Set('title', substr($oEmail->sSubject, 0, $iTitleMaxSize));
 		}
-		
+
 		$aIgnoredAttachments = array();
-		
+
 		// Insert the remaining attachments so that we know their ID and can reference them in the message's body
 		$aAddedAttachments = $this->AddAttachments($oTicket, $oEmail, true, $aIgnoredAttachments);  // Cannot insert them for real since the Ticket is not saved yet (we don't know its ID)
 																									// we'll have to call UpdateAttachments once the ticket is properly saved
-		$oAttDef = MetaModel::GetAttributeDef(get_class($oTicket), 'description');
+		$oTicketDescriptionAttDef = MetaModel::GetAttributeDef(get_class($oTicket), 'description');
 		$bForPlainText = true; // Target format is plain text (by default)
-		if ($oAttDef instanceof AttributeHTML)
+		if ($oTicketDescriptionAttDef instanceof AttributeHTML)
 		{
 			// Target format is HTML
 			$bForPlainText = false;
 		}
-		else if ($oAttDef instanceof AttributeText)
+		else if ($oTicketDescriptionAttDef instanceof AttributeText)
 		{
-			$aParams = $oAttDef->GetParams();
+			$aParams = $oTicketDescriptionAttDef->GetParams();
 			if (array_key_exists('format', $aParams) && ($aParams['format'] == 'html'))
 			{
 				// Target format is HTML
@@ -486,18 +489,17 @@ EOF
 		}
 		$this->Trace("Target format for 'description': ".($bForPlainText ? 'text/plain' : 'text/html'));
 		$this->Trace("Email body format: ".$oEmail->sBodyFormat);
-		
+
 		$sTicketDescription = $this->BuildDescription($oEmail, $aAddedAttachments, $aIgnoredAttachments, $bForPlainText);
 
-		$iMaxSize = $oAttDef->GetMaxSize();
-		$bTextTruncated = false;
-		if (strlen($sTicketDescription) > $iMaxSize)
+		$iDescriptionMaxSize = $oTicketDescriptionAttDef->GetMaxSize();
+		if (strlen($sTicketDescription) > $iDescriptionMaxSize)
 		{
 			$oEmail->aAttachments[] = array('content' => $sTicketDescription, 'filename' => ($bForPlainText ? 'original message.txt' : 'original message.html'), 'mimeType' => ($bForPlainText ? 'text/plain' : 'text/html'));
 		}
-		
-		$oTicket->Set('description', $this->FitTextIn($sTicketDescription, $iMaxSize - 1000)); // Keep some room just in case...
-		
+
+		$oTicket->Set('description', $this->FitTextIn($sTicketDescription, $iDescriptionMaxSize - 1000)); // Keep some room just in case...
+
 		// Default values
 		$sDefaultValues = $this->Get('ticket_default_values');
 		$aDefaults = explode("\n", $sDefaultValues);
@@ -512,17 +514,17 @@ EOF
 			}
 		}
 		$this->InitObjectFromDefaultValues($oTicket, $aDefaultValues);
-		
+
 		if (($this->Get('import_additional_contacts') == 'always') || ($this->Get('import_additional_contacts') == 'only_on_creation'))
 		{
 			$this->AddAdditionalContacts($oTicket, $oEmail);
 		}
-		
+
 		$this->BeforeInsertTicket($oTicket, $oEmail, $oCaller);
 		$oTicket->DBInsert();
 		$this->Trace("Ticket ".$oTicket->GetName()." created.");
 		$this->AfterInsertTicket($oTicket, $oEmail, $oCaller, $aAddedAttachments);
-		
+
 		return $oTicket;
 	}]]></code>
         </method>

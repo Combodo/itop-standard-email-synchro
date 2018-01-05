@@ -25,18 +25,10 @@ SetupWebPage::AddModule(
 		//
 		'datamodel' => array(
 			'stdemailsynchro.class.inc.php',
-			'model.itop-standard-email-synchro.php'
-			//'mailinboxstandard.class.inc.php',
 		),
-		'webservice' => array(
-			
-		),
-		'data.struct' => array(
-			// add your 'structure' definition XML files here,
-		),
-		'data.sample' => array(
-			// add your sample data XML files here,
-		),
+		'webservice' => array(),
+		'data.struct' => array(),
+		'data.sample' => array(),
 		
 		// Documentation
 		//
