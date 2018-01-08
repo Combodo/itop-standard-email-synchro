@@ -45,6 +45,8 @@ Dict::Add('FR FR', 'French', 'Français', array(
 	'Class:MailInboxStandard/Attribute:unknown_caller_behavior/Value:create_contact' => 'Créer une nouvelle Personne',
 	'Class:MailInboxStandard/Attribute:unknown_caller_behavior/Value:reject_email' => 'Rejeter l\'eMail',
 
+    'Class:MailInboxStandard/Attribute:unknown_caller_rejection_reply' => 'Réponse pour les contacts inconnus',
+
 	'Class:MailInboxStandard/Attribute:trace' => 'Activer la trace',
 	'Class:MailInboxStandard/Attribute:trace/Value:yes' => 'Oui',
 	'Class:MailInboxStandard/Attribute:trace/Value:no' => 'Non',

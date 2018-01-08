@@ -45,6 +45,8 @@ Dict::Add('EN US', 'English', 'English', array(
 	'Class:MailInboxStandard/Attribute:unknown_caller_behavior/Value:create_contact' => 'Create a new Person',
 	'Class:MailInboxStandard/Attribute:unknown_caller_behavior/Value:reject_email' => 'Reject the eMail',
 
+    'Class:MailInboxStandard/Attribute:unknown_caller_rejection_reply' => 'Unknown Caller rejection reply',
+
 	'Class:MailInboxStandard/Attribute:trace' => 'Debug trace',
 	'Class:MailInboxStandard/Attribute:trace/Value:yes' => 'Yes',
 	'Class:MailInboxStandard/Attribute:trace/Value:no' => 'No',

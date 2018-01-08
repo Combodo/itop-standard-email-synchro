@@ -77,6 +77,11 @@
           <default_value>reject_email</default_value>
           <is_null_allowed>false</is_null_allowed>
         </field>
+        <field id="unknown_caller_rejection_reply" xsi:type="AttributeText">
+          <sql>unknown_caller_rejection_reply</sql>
+          <default_value/>
+          <is_null_allowed>true</is_null_allowed>
+        </field>
         <field id="caller_default_values" xsi:type="AttributeText">
           <sql>caller_default_values</sql>
           <default_value/>
@@ -1112,17 +1117,32 @@ EOF
 			$this->SetNextAction(EmailProcessor::MARK_MESSAGE_AS_ERROR); // Keep the message in the mailbox, but marked as error
 			$sLastAction = "<p>The eMail is marked as error and will be ignored in further processing of the mailbox.</p>\n";
 		}
-		$bFeedback = true;
 		$sBody = "";
 		switch($sErrorCode)
 		{
 			case 'unknown_contact':
 			// Reject the message because of an unknown caller
+			$this->sLastError = "Unknown caller (".$oEmail->sCallerEmail.")";
+
+			// if rejection reply
+			$sRejectionReply = $this->Get('unknown_caller_rejection_reply');
+			if (!empty($sRejectionReply) && $oRawEmail && !empty($sFrom))
+			{
+			    $sReplySubject = '[iTop] '.$oEmail->sSubject.' - '.$this->sLastError;
+			    $sReplyBody = str_replace("\n", "<br/>", $sRejectionReply);
+			    $sReplyTo = $oEmail->sCallerEmail;
+			    $sReplyFrom = $sFrom;
+			    $this->Trace("To: ".$sReplyTo."\n".$sReplySubject."\n\n".$sReplyBody);
+			    $oRawEmail->SendAsAttachment($sReplyTo, $sReplyFrom, $sReplySubject, $sReplyBody);
+
+			    $this->sLastError .= " - Replied to sender on ".date('r');
+			}
+
+			// Send to contact
 			$sSubject = '[iTop] Unknown contact in incoming eMail - '.$oEmail->sSubject;
 			$sBody = "<p>The following email (see attachment) comes from an unknown caller (".$oEmail->sCallerEmail.").<br/>\n";
 			$sBody .= "<p>Check the configuration of the Mail Inbox '".$this->GetName()."', since the current configuration does not allow to create new contacts for unknown callers.</p>\n";
 			$sBody .= $sLastAction;
-			$this->sLastError = "Unknown caller (".$oEmail->sCallerEmail.")";
 			break;
 			
 			case 'decode_failed':
@@ -1232,7 +1252,7 @@ EOF
                 $this->SetNextAction(EmailProcessor::MARK_MESSAGE_AS_UNDESIRED); // Keep the message in the mailbox, but marked as undesired
             }
             $this->sLastError = 'Undesired email';
-            $bFeedback = false; // No feedback on undesired emails
+            $oRawEmail = null; // No feedback on undesired emails
 			break;
 			
 			default:
@@ -1242,20 +1262,17 @@ EOF
 			$this->sLastError = 'Unexpected error: '.$sErrorCode;
 		}
 
-		if ($bFeedback)
-		{
-		    $sBody .= "<p>&nbsp;</p><p>Mail Inbox Configuration: ".$this->GetHyperlink()."</p>\n";
+        $sBody .= "<p>&nbsp;</p><p>Mail Inbox Configuration: ".$this->GetHyperlink()."</p>\n";
 
-		    if(($sTo == '') || ($sFrom == ''))
-            {
-                $this->Trace("HandleError($sErrorCode): No forward configured for forwarding the email...(To: '$sTo', From: '$sFrom'), skipping.");
-            }
-            else if($oRawEmail)
-            {
-                $this->Trace($sSubject."\n\n".$sBody);
-                $oRawEmail->SendAsAttachment($sTo, $sFrom, $sSubject, $sBody);
-            }
-		}
+        if(($sTo == '') || ($sFrom == ''))
+        {
+            $this->Trace("HandleError($sErrorCode): No forward configured for forwarding the email...(To: '$sTo', From: '$sFrom'), skipping.");
+        }
+        else if($oRawEmail)
+        {
+            $this->Trace("To: ".$sTo."\n".$sSubject."\n\n".$sBody);
+            $oRawEmail->SendAsAttachment($sTo, $sFrom, $sSubject, $sBody);
+        }
 	}]]></code>
         </method>
         <method id="FixPattern">
@@ -1370,6 +1387,9 @@ EOF
                   <items>
                     <item id="unknown_caller_behavior">
                       <rank>10</rank>
+                    </item>
+                    <item id="unknown_caller_rejection_reply">
+                      <rank>15</rank>
                     </item>
                     <item id="caller_default_values">
                       <rank>20</rank>
