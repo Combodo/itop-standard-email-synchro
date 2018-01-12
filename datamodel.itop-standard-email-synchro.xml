@@ -1126,13 +1126,13 @@ EOF
 
 			// if rejection reply
 			$sRejectionReply = $this->Get('unknown_caller_rejection_reply');
-			if (!empty($sRejectionReply) && $oRawEmail && !empty($sFrom))
+			if (!empty($sRejectionReply) && $oRawEmail)
 			{
 			    $sReplySubject = '[iTop] '.$oEmail->sSubject.' - '.$this->sLastError;
 			    $sReplyBody = str_replace("\n", "<br/>", $sRejectionReply);
 			    $sReplyTo = $oEmail->sCallerEmail;
-			    $sReplyFrom = $sFrom;
-			    $this->Trace("To: ".$sReplyTo."\n".$sReplySubject."\n\n".$sReplyBody);
+			    $sReplyFrom = $oRawEmail->GetTo()[0]['email'];
+			    $this->Trace("From: ".$sReplyFrom."\nTo: ".$sReplyTo."\n".$sReplySubject."\n\n".$sReplyBody);
 			    $oRawEmail->SendAsAttachment($sReplyTo, $sReplyFrom, $sReplySubject, $sReplyBody);
 
 			    $this->sLastError .= " - Replied to sender on ".date('r');
