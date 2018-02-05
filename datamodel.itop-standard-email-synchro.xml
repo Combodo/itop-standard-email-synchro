@@ -1131,7 +1131,8 @@ EOF
 			    $sReplySubject = '[iTop] '.$oEmail->sSubject.' - '.$this->sLastError;
 			    $sReplyBody = str_replace("\n", "<br/>", $sRejectionReply);
 			    $sReplyTo = $oEmail->sCallerEmail;
-			    $sReplyFrom = $oRawEmail->GetTo()[0]['email'];
+			    $aTo = $oRawEmail->GetTo();
+			    $sReplyFrom = $aTo[0]['email'];
 			    $this->Trace("From: ".$sReplyFrom."\nTo: ".$sReplyTo."\n".$sReplySubject."\n\n".$sReplyBody);
 			    $oRawEmail->SendAsAttachment($sReplyTo, $sReplyFrom, $sReplySubject, $sReplyBody);
 
