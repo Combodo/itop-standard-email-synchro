@@ -5,7 +5,7 @@
 
 SetupWebPage::AddModule(
 	__FILE__, // Path to the current file, all other file names are relative to the directory containing this file
-	'itop-standard-email-synchro/3.0.7',
+	'itop-standard-email-synchro/3.0.8',
 	array(
 		// Identification
 		//
@@ -24,7 +24,6 @@ SetupWebPage::AddModule(
 		// Components
 		//
 		'datamodel' => array(
-			'stdemailsynchro.class.inc.php',
 			'model.itop-standard-email-synchro.php',
 		),
 		'webservice' => array(),

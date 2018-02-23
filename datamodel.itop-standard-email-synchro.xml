@@ -1447,4 +1447,13 @@ EOF
       </presentation>
     </class>
   </classes>
+  <menus>
+    <menu id="MailInboxes" xsi:type="OQLMenuNode" _delta="define">
+      <rank>20</rank>
+      <parent>AdminTools</parent>
+      <oql><![CDATA[SELECT MailInboxStandard]]></oql>
+      <do_search>1</do_search>
+      <enable_admin_only>1</enable_admin_only>
+    </menu>
+  </menus>
 </itop_design>
