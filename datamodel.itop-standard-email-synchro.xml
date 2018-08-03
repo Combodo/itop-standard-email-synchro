@@ -320,7 +320,7 @@ EOF
           <code><![CDATA[	protected function FindCaller(EmailMessage $oEmail)
 	{
 		$oCaller = null;
-		$sContactQuery = 'SELECT Contact WHERE email = :email';
+		$sContactQuery = 'SELECT Person WHERE email = :email';
 		$oSet = new DBObjectSet(DBObjectSearch::FromOQL($sContactQuery), array(), array('email' => $oEmail->sCallerEmail));
 		$sAdditionalDescription = '';
 		switch($oSet->Count())
