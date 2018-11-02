@@ -13,8 +13,7 @@
 //   You should have received a copy of the GNU General Public License
 //   along with this program; if not, write to the Free Software
 //   Foundation, Inc., 59 Temple Place, Suite 330, Boston, MA  02111-1307  USA
-
-Dict::Add('ES CR', 'Spanish', 'Español, Castellano', array(
+Dict::Add('ES CR', 'Spanish', 'Español, Castellaño', array(
 	// Dictionary entries go here
 	'Class:MailInboxStandard' => 'Buzón Estandard de Correo',
 	'Class:MailInboxStandard+' => 'Fuente de correo entrante',
@@ -45,6 +44,8 @@ Dict::Add('ES CR', 'Spanish', 'Español, Castellano', array(
 	'Class:MailInboxStandard/Attribute:unknown_caller_behavior/Value:create_contact' => 'Crear una nueva Persona',
 	'Class:MailInboxStandard/Attribute:unknown_caller_behavior/Value:reject_email' => 'Rechazar el correo',
 
+    'Class:MailInboxStandard/Attribute:unknown_caller_rejection_reply' => 'Unknown Caller rejection reply~~',
+
 	'Class:MailInboxStandard/Attribute:trace' => 'Traza de Depuración',
 	'Class:MailInboxStandard/Attribute:trace/Value:yes' => 'Si',
 	'Class:MailInboxStandard/Attribute:trace/Value:no' => 'No',
@@ -55,7 +56,7 @@ Dict::Add('ES CR', 'Spanish', 'Español, Castellano', array(
 	'Class:MailInboxStandard/Attribute:import_additional_contacts/Value:only_on_update' => 'Cuando se actualice un Ticket existenge',
 	'Class:MailInboxStandard/Attribute:import_additional_contacts/Value:always' => 'Siempre',
 		
-	'Class:MailInboxStandard/Attribute:caller_default_values' => "Valores por Omisión para Nueva Persona",
+	'Class:MailInboxStandard/Attribute:caller_default_values' => 'Valores por Omisión para Nueva Persona',
 	'Class:MailInboxStandard/Attribute:debug_log' => 'Log de Depuración',
 	'Class:MailInboxStandard/Attribute:error_behavior' => 'Comportamiento',
 	'Class:MailInboxStandard/Attribute:error_behavior/Value:delete' => 'Borrar el mensaje del buzón',
