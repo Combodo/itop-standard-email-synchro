@@ -13,7 +13,6 @@
 //   You should have received a copy of the GNU General Public License
 //   along with this program; if not, write to the Free Software
 //   Foundation, Inc., 59 Temple Place, Suite 330, Boston, MA  02111-1307  USA
-
 Dict::Add('DE DE', 'German', 'Deutsch', array(
 	// Dictionary entries go here
 	'Class:MailInboxStandard' => 'Standard-Maileingangspostfach',
@@ -57,7 +56,7 @@ Dict::Add('DE DE', 'German', 'Deutsch', array(
 	'Class:MailInboxStandard/Attribute:import_additional_contacts/Value:only_on_update' => 'Beim Aktualisieren eines Tickets',
 	'Class:MailInboxStandard/Attribute:import_additional_contacts/Value:always' => 'Immer',
 		
-	'Class:MailInboxStandard/Attribute:caller_default_values' => "Default-Werte für neue Person",
+	'Class:MailInboxStandard/Attribute:caller_default_values' => 'Default-Werte für neue Person',
 	'Class:MailInboxStandard/Attribute:debug_log' => 'Debug-Log',
 	'Class:MailInboxStandard/Attribute:error_behavior' => 'Verhalten im Fehlerfall',
 	'Class:MailInboxStandard/Attribute:error_behavior/Value:delete' => 'Nachricht aus der Mailbox löschen',

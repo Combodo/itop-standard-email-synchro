@@ -13,7 +13,6 @@
 //   You should have received a copy of the GNU General Public License
 //   along with this program; if not, write to the Free Software
 //   Foundation, Inc., 59 Temple Place, Suite 330, Boston, MA  02111-1307  USA
-
 Dict::Add('FR FR', 'French', 'Français', array(
 	// Dictionary entries go here
 	'Class:MailInboxStandard' => 'Boîte Mail Standard',
@@ -40,7 +39,7 @@ Dict::Add('FR FR', 'French', 'Français', array(
 	'Class:MailInboxStandard/Attribute:stimuli' => 'Stimuli à appliquer',
 	'Class:MailInboxStandard/Attribute:stimuli+' => 'Appliquer un stimulus quand le ticket est dans un état donné',
 	'Class:MailInboxStandard/Attribute:stimuli?' => 'Utilisez le format <code_etat>:<code_stimulus>',
-		
+
 	'Class:MailInboxStandard/Attribute:unknown_caller_behavior' => 'Comportement pour les contacts inconnus',
 	'Class:MailInboxStandard/Attribute:unknown_caller_behavior/Value:create_contact' => 'Créer une nouvelle Personne',
 	'Class:MailInboxStandard/Attribute:unknown_caller_behavior/Value:reject_email' => 'Rejeter l\'eMail',
@@ -57,7 +56,7 @@ Dict::Add('FR FR', 'French', 'Français', array(
 	'Class:MailInboxStandard/Attribute:import_additional_contacts/Value:only_on_update' => 'Lors de la mise à jour d\'un Ticket existant',
 	'Class:MailInboxStandard/Attribute:import_additional_contacts/Value:always' => 'Toujours',
 		
-	'Class:MailInboxStandard/Attribute:caller_default_values' => "Valeurs par défaut pour la nouvelle Personne",
+	'Class:MailInboxStandard/Attribute:caller_default_values' => 'Valeurs par défaut pour la nouvelle Personne',
 	'Class:MailInboxStandard/Attribute:debug_log' => 'Traces de Debug',
 	'Class:MailInboxStandard/Attribute:error_behavior' => 'Comportement en cas d\'erreur',
 	'Class:MailInboxStandard/Attribute:error_behavior/Value:delete' => 'Supprimer l\'eMail de la boîte mail',
