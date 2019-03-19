@@ -82,3 +82,22 @@ Dict::Add('EN US', 'English', 'English', array(
 	'MailInboxStandard:DebugTraceNotActive' => 'Activate the debug on this Inbox to see the debug trace here.',
 	'MailInbox:NoSubject' => 'No subject',
 ));
+
+//
+// Class: MailInboxStandard
+//
+
+Dict::Add('EN US', 'English', 'English', array(
+	'Class:MailInboxStandard/Attribute:target_class/Value:Change' => 'Change',
+	'Class:MailInboxStandard/Attribute:target_class/Value:Change+' => '',
+	'Class:MailInboxStandard/Attribute:target_class/Value:RoutineChange' => 'RoutineChange',
+	'Class:MailInboxStandard/Attribute:target_class/Value:RoutineChange+' => '',
+	'Class:MailInboxStandard/Attribute:target_class/Value:NormalChange' => 'NormalChange',
+	'Class:MailInboxStandard/Attribute:target_class/Value:NormalChange+' => '',
+	'Class:MailInboxStandard/Attribute:target_class/Value:EmergencyChange' => 'EmergencyChange',
+	'Class:MailInboxStandard/Attribute:target_class/Value:EmergencyChange+' => '',
+	'Class:MailInboxStandard/Attribute:target_class/Value:Problem' => 'Problem',
+	'Class:MailInboxStandard/Attribute:target_class/Value:Problem+' => '',
+	'Class:MailInboxStandard/Attribute:debug_trace' => 'Debug trace',
+	'Class:MailInboxStandard/Attribute:debug_trace+' => '',
+));

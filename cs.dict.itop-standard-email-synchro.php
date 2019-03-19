@@ -20,7 +20,6 @@
  * You should have received a copy of the GNU Affero General Public License
  * along with iTop. If not, see <http://www.gnu.org/licenses/>
  */
-
 Dict::Add('CS CZ', 'Czech', 'Čeština', array(
 	// Dictionary entries go here
 	'Class:MailInboxStandard' => 'Standard Mail Inbox~~',
@@ -81,4 +80,23 @@ Dict::Add('CS CZ', 'Czech', 'Čeština', array(
 	'MailInboxStandard:DebugTrace' => 'Debug Trace~~',
 	'MailInboxStandard:DebugTraceNotActive' => 'Activate the debug on this Inbox to see the debug trace here.~~',
 	'MailInbox:NoSubject' => 'No subject~~',
+));
+
+//
+// Class: MailInboxStandard
+//
+
+Dict::Add('CS CZ', 'Czech', 'Čeština', array(
+	'Class:MailInboxStandard/Attribute:target_class/Value:Change' => 'Change~~',
+	'Class:MailInboxStandard/Attribute:target_class/Value:Change+' => '~~',
+	'Class:MailInboxStandard/Attribute:target_class/Value:RoutineChange' => 'RoutineChange~~',
+	'Class:MailInboxStandard/Attribute:target_class/Value:RoutineChange+' => '~~',
+	'Class:MailInboxStandard/Attribute:target_class/Value:NormalChange' => 'NormalChange~~',
+	'Class:MailInboxStandard/Attribute:target_class/Value:NormalChange+' => '~~',
+	'Class:MailInboxStandard/Attribute:target_class/Value:EmergencyChange' => 'EmergencyChange~~',
+	'Class:MailInboxStandard/Attribute:target_class/Value:EmergencyChange+' => '~~',
+	'Class:MailInboxStandard/Attribute:target_class/Value:Problem' => 'Problem~~',
+	'Class:MailInboxStandard/Attribute:target_class/Value:Problem+' => '~~',
+	'Class:MailInboxStandard/Attribute:debug_trace' => 'Debug trace~~',
+	'Class:MailInboxStandard/Attribute:debug_trace+' => '~~',
 ));
