@@ -409,7 +409,13 @@ EOF
 			if(($sPattern != '') && (preg_match($sPattern, $oEmail->sSubject, $aMatches)))
 			{
 				$iTicketId = 0;
-				sscanf($aMatches[1], '%d', $iTicketId);
+				foreach ($aMatches as $sMatch){
+				  sscanf($sMatch, '%d', $iTicketId);
+				  if ($iTicketId != 0)
+				  {
+				    break;
+				  }
+                }
 				$this->Trace("iTop Simple Email Synchro: Retrieving ticket ".$iTicketId." (match by subject pattern)...");
 				$oTicket = MetaModel::GetObject('Ticket', $iTicketId, false);
 			}
