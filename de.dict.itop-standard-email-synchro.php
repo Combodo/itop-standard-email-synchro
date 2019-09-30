@@ -67,7 +67,7 @@ Dict::Add('DE DE', 'German', 'Deutsch', array(
 	'MailInbox:Behavior' => 'verhalten be eingehenden Mails',
 	'MailInbox:Caller' => 'Unbekannte Melder',
 	'MailInbox:Errors' => 'Mails mit Fehlern',
-	'MailInbox:OtherContacts' => 'Verhalten bzgl. zustzlicher Kontakte',
+	'MailInbox:OtherContacts' => 'Verhalten bzgl. zusätzlicher Kontakte',
 	'Menu:MailInboxes' => 'Mail-Inboxen',
 	'Menu:MailInboxes+' => 'Konfiguration von Mail-Inboxen, die nach eingehenden Mails abzuscannen sind',
 	'MailInboxStandard:DebugTrace' => 'Debug-Trace',
