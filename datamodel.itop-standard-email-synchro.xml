@@ -1442,13 +1442,9 @@ EOF
     </class>
   </classes>
   <menus>
-    <menu id="AdminTools" xsi:type="MenuGroup" _delta="define_if_not_exists">
-      <rank>80</rank>
-      <enable_admin_only>1</enable_admin_only>
-    </menu>
     <menu id="MailInboxes" xsi:type="OQLMenuNode" _delta="define">
-      <rank>20</rank>
-      <parent>AdminTools</parent>
+      <rank>30</rank>
+      <parent>Configuration</parent>
       <oql><![CDATA[SELECT MailInboxStandard]]></oql>
       <do_search>1</do_search>
       <enable_admin_only>1</enable_admin_only>
