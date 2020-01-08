@@ -396,19 +396,23 @@ EOF
 			$sPattern = $this->FixPattern($this->Get('title_pattern'));
 			if(($sPattern != '') && (preg_match($sPattern, $oEmail->sSubject, $aMatches)))
 			{
-				$iTicketId = 0;
-				foreach ($aMatches as $sMatch){
-				  sscanf($sMatch, '%d', $iTicketId);
-				  if ($iTicketId != 0)
-				  {
-				    break;
-				  }
+				$oFilter = DBSearch::FromOQL('SELECT Ticket WHERE ref = :ref');
+				foreach ($aMatches as $sMatch)
+				{
+					if (!empty($sMatch))
+					{
+						$this->Trace("iTop Simple Email Synchro: Retrieving ticket $sMatch (match by subject pattern)...");
+						$oSet = new DBObjectSet($oFilter, array(), array('ref' => $sMatch));
+						$oTicket = $oSet->Fetch();
+						if ($oTicket)
+						{
+							break;
+						}
+				    }
                 }
-				$this->Trace("iTop Simple Email Synchro: Retrieving ticket ".$iTicketId." (match by subject pattern)...");
-				$oTicket = MetaModel::GetObject('Ticket', $iTicketId, false);
 			}
 		}		
-		
+
 		return $oTicket;
 	}]]></code>
         </method>
@@ -1442,6 +1446,9 @@ EOF
     </class>
   </classes>
   <menus>
+    <menu id="Configuration" xsi:type="MenuGroup" _delta="define_if_not_exists">
+      <rank>90</rank>
+    </menu>
     <menu id="MailInboxes" xsi:type="OQLMenuNode" _delta="define">
       <rank>30</rank>
       <parent>Configuration</parent>
