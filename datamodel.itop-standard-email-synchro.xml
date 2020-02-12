@@ -1446,7 +1446,7 @@ EOF
     </class>
   </classes>
   <menus>
-    <menu id="Configuration" xsi:type="MenuGroup" _delta="define_if_not_exists">
+    <menu id="ConfigurationTools" xsi:type="MenuGroup" _delta="define_if_not_exists">
       <rank>90</rank>
     </menu>
     <menu id="MailInboxes" xsi:type="OQLMenuNode" _delta="define">
