@@ -254,51 +254,61 @@ EOF
 			return null;
 		}
 
-		// Search if the caller email is an existing contact in iTop
-		$oCaller = $this->FindCaller($oEmail);
-		if ($oCaller === null)
+		try
 		{
-			// Cannot create/update a ticket if the caller is unknown
-			return null;
-		}
-
-		// Check whether we need to create a new ticket or to update an existing one
-		$oTicket = $this->GetRelatedTicket($oEmail);
-
-		switch($this->Get('behavior'))
-		{
-			case 'create_only':
-			$oTicket = $this->CreateTicketFromEmail($oEmail, $oCaller);
-			break;
-			
-			case 'update_only':
-			if (!is_object($oTicket))
+			// Search if the caller email is an existing contact in iTop
+			$oCaller = $this->FindCaller($oEmail);
+			if ($oCaller === null)
 			{
-				// No ticket associated with the incoming email, nothing to update, reject the email
-				$this->HandleError($oEmail, 'nothing_to_update', $oEmail->oRawEmail);
+				// Cannot create/update a ticket if the caller is unknown
+				return null;
 			}
-			else
+
+			// Check whether we need to create a new ticket or to update an existing one
+			$oTicket = $this->GetRelatedTicket($oEmail);
+
+			switch($this->Get('behavior'))
 			{
-				// Update the ticket with the incoming eMail
-				$this->UpdateTicketFromEmail($oTicket, $oEmail, $oCaller);
-			}
-			break;
-			
-			default: // both: update or create as needed
-			if (!is_object($oTicket))
-			{
-				// Let's create a new ticket
+				case 'create_only':
 				$oTicket = $this->CreateTicketFromEmail($oEmail, $oCaller);
+				break;
+
+				case 'update_only':
+				if (!is_object($oTicket))
+				{
+					// No ticket associated with the incoming email, nothing to update, reject the email
+					$this->HandleError($oEmail, 'nothing_to_update', $oEmail->oRawEmail);
+				}
+				else
+				{
+					// Update the ticket with the incoming eMail
+					$this->UpdateTicketFromEmail($oTicket, $oEmail, $oCaller);
+				}
+				break;
+
+				default: // both: update or create as needed
+				if (!is_object($oTicket))
+				{
+					// Let's create a new ticket
+					$oTicket = $this->CreateTicketFromEmail($oEmail, $oCaller);
+				}
+				else
+				{
+					// Update the ticket with the incoming eMail
+					$this->UpdateTicketFromEmail($oTicket, $oEmail, $oCaller);
+				}
+				break;
 			}
-			else
-			{
-				// Update the ticket with the incoming eMail
-				$this->UpdateTicketFromEmail($oTicket, $oEmail, $oCaller);
-			}
-			break;			
+
+			return $oTicket;
 		}
-		
-		return $oTicket;
+		catch(Exception $e)
+		{
+			$sExceptionMessage = $e->getMessage();
+			$sExceptionStack = $e->getTraceAsString();
+			$this->Trace("ERROR occurred during mail processing : $sExceptionMessage\n$sExceptionStack");
+			$this->HandleError($oEmail, 'error during processing', $oEmail->oRawEmail);
+		}
 	}]]></code>
         </method>
         <method id="FindCaller">
