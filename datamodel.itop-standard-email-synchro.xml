@@ -202,15 +202,8 @@ EOF
 		if ($this->Get('trace') == 'yes')
 		{
 			$sStampedText = date('Y-m-d H:i:s').' - '.$sText."\n";
-			$this->Set('debug_trace', substr($this->Get('debug_trace').$sStampedText, -$iMaxTraceLength));
-
-			// Creating a CMDBChange is no longer needed in 2.0, but let's keep doing it for compatibility with 1.x
-			$oMyChange = MetaModel::NewObject("CMDBChange");
-			$oMyChange->Set("date", time());
-			$sUserString = CMDBChange::GetCurrentUserName();
-			$oMyChange->Set("userinfo", $sUserString);
-			$iChangeId = $oMyChange->DBInsert();
-			$this->DBUpdateTracked($oMyChange);
+			$this->Set('debug_trace', mb_substr($this->Get('debug_trace').$sStampedText, -$iMaxTraceLength));
+			$this->DBUpdate();
 		}
 	}]]></code>
         </method>
@@ -251,7 +244,8 @@ EOF
           <access>public</access>
           <type>Overload-DBObject</type>
           <code><![CDATA[	public function ProcessNewEmail(EmailSource $oSource, $index, EmailMessage $oEmail)
-	{		
+	{
+	    $this->sLastError = null;
 		$this->Trace("Processing new eMail (index = $index)");
 		$oTicket = null;
 		if ($this->IsUndesired($oEmail))
@@ -260,51 +254,61 @@ EOF
 			return null;
 		}
 
-		// Search if the caller email is an existing contact in iTop
-		$oCaller = $this->FindCaller($oEmail);
-		if ($oCaller === null)
+		try
 		{
-			// Cannot create/update a ticket if the caller is unknown
-			return null;
-		}
-
-		// Check whether we need to create a new ticket or to update an existing one
-		$oTicket = $this->GetRelatedTicket($oEmail);
-
-		switch($this->Get('behavior'))
-		{
-			case 'create_only':
-			$oTicket = $this->CreateTicketFromEmail($oEmail, $oCaller);
-			break;
-			
-			case 'update_only':
-			if (!is_object($oTicket))
+			// Search if the caller email is an existing contact in iTop
+			$oCaller = $this->FindCaller($oEmail);
+			if ($oCaller === null)
 			{
-				// No ticket associated with the incoming email, nothing to update, reject the email
-				$this->HandleError($oEmail, 'nothing_to_update', $oEmail->oRawEmail);
+				// Cannot create/update a ticket if the caller is unknown
+				return null;
 			}
-			else
+
+			// Check whether we need to create a new ticket or to update an existing one
+			$oTicket = $this->GetRelatedTicket($oEmail);
+
+			switch($this->Get('behavior'))
 			{
-				// Update the ticket with the incoming eMail
-				$this->UpdateTicketFromEmail($oTicket, $oEmail, $oCaller);
-			}
-			break;
-			
-			default: // both: update or create as needed
-			if (!is_object($oTicket))
-			{
-				// Let's create a new ticket
+				case 'create_only':
 				$oTicket = $this->CreateTicketFromEmail($oEmail, $oCaller);
+				break;
+
+				case 'update_only':
+				if (!is_object($oTicket))
+				{
+					// No ticket associated with the incoming email, nothing to update, reject the email
+					$this->HandleError($oEmail, 'nothing_to_update', $oEmail->oRawEmail);
+				}
+				else
+				{
+					// Update the ticket with the incoming eMail
+					$this->UpdateTicketFromEmail($oTicket, $oEmail, $oCaller);
+				}
+				break;
+
+				default: // both: update or create as needed
+				if (!is_object($oTicket))
+				{
+					// Let's create a new ticket
+					$oTicket = $this->CreateTicketFromEmail($oEmail, $oCaller);
+				}
+				else
+				{
+					// Update the ticket with the incoming eMail
+					$this->UpdateTicketFromEmail($oTicket, $oEmail, $oCaller);
+				}
+				break;
 			}
-			else
-			{
-				// Update the ticket with the incoming eMail
-				$this->UpdateTicketFromEmail($oTicket, $oEmail, $oCaller);
-			}
-			break;			
+
+			return $oTicket;
 		}
-		
-		return $oTicket;
+		catch(Exception $e)
+		{
+			$sExceptionMessage = $e->getMessage();
+			$sExceptionStack = $e->getTraceAsString();
+			$this->Trace("ERROR occurred during mail processing : $sExceptionMessage\n$sExceptionStack");
+			$this->HandleError($oEmail, 'error during processing', $oEmail->oRawEmail);
+		}
 	}]]></code>
         </method>
         <method id="FindCaller">
@@ -359,13 +363,7 @@ EOF
 				$this->InitObjectFromDefaultValues($oCaller, $aDefaultValues);
 				try
 				{
-					// Creating a CMDBChange is no longer needed in 2.0, but let's keep doing it for compatibility with 1.x
-					$oMyChange = MetaModel::NewObject("CMDBChange");
-					$oMyChange->Set("date", time());
-					$sUserString = CMDBChange::GetCurrentUserName();
-					$oMyChange->Set("userinfo", $sUserString);
-					$iChangeId = $oMyChange->DBInsert();
-					$oCaller->DBInsertTracked($oMyChange);					
+					$oCaller->DBInsert();
 				}
 				catch(Exception $e)
 				{
@@ -408,13 +406,23 @@ EOF
 			$sPattern = $this->FixPattern($this->Get('title_pattern'));
 			if(($sPattern != '') && (preg_match($sPattern, $oEmail->sSubject, $aMatches)))
 			{
-				$iTicketId = 0;
-				sscanf($aMatches[1], '%d', $iTicketId);
-				$this->Trace("iTop Simple Email Synchro: Retrieving ticket ".$iTicketId." (match by subject pattern)...");
-				$oTicket = MetaModel::GetObject('Ticket', $iTicketId, false);
+				$oFilter = DBSearch::FromOQL('SELECT Ticket WHERE ref = :ref');
+				foreach ($aMatches as $sMatch)
+				{
+					if (!empty($sMatch))
+					{
+						$this->Trace("iTop Simple Email Synchro: Retrieving ticket $sMatch (match by subject pattern)...");
+						$oSet = new DBObjectSet($oFilter, array(), array('ref' => $sMatch));
+						$oTicket = $oSet->Fetch();
+						if ($oTicket)
+						{
+							break;
+						}
+				    }
+                }
 			}
 		}		
-		
+
 		return $oTicket;
 	}]]></code>
         </method>
@@ -598,7 +606,7 @@ EOF
 		{
 			$sCallerEmail = $oTicket->Get('caller_id->email');
 			// Exclude the caller from the additional contacts
-			if ($aInfo['email'] != $sCallerEmail)
+			if ($aInfo['email'] != $sCallerEmail && $aInfo['email'] != $this->Get('login'))
 			{
 				$oContact = $this->FindAdditionalContact($aInfo['email']);
 				if (($oContact != null) && !array_key_exists($oContact->GetKey(), $aExistingContacts))
@@ -610,7 +618,7 @@ EOF
 			}
 			else
 			{
-				$this->Trace('Skipping "'.$sCallerEmail.'" from the email address in To/CC since it is the same as the caller\'s email.');
+				$this->Trace('Skipping "'.$aInfo['email'].'" from the email address in To/CC since it is the same as the caller\'s email or mailbox\'s email.');
 			}
 		}
 		$oTicket->Set('contacts_list', $oContactsSet);
@@ -852,7 +860,7 @@ EOF
 		{
 			$sStimulusCode = $aStateToStimulus[$oTicket->GetState()];
 			$this->Trace('About to apply the stimulus: '.$sStimulusCode.' for the ticket in state: '.$oTicket->GetState());
-			
+
 			// Check that applying the stimulus will not break the data integrity constaints (mandatory, must change)
 			$aTransitions = $oTicket->EnumTransitions();
 			$bCanApplyStimulus = true;
@@ -1226,9 +1234,9 @@ EOF
 			case 'rejected_attachments':
 			$sSubject = '[iTop] Failed to process attachment(s) for the incoming eMail - '.$oEmail->sSubject;
 			$sBody = "<p>Some attachments to the eMail were not processed because they are too big:</p>\n";
+			$this->sLastError = $sAdditionalErrorMessage;
 			$sBody .= "<pre>".$sAdditionalErrorMessage."</pre>\n";
-			$sBody .= $sLastAction;
-			
+
 			$oRawEmail = null; // No original message in attachment
 			$this->Trace($sSubject."\n\n".$sBody);
 			// Send the email now...
@@ -1448,13 +1456,12 @@ EOF
     </class>
   </classes>
   <menus>
-    <menu id="AdminTools" xsi:type="MenuGroup" _delta="define_if_not_exists">
-      <rank>80</rank>
-      <enable_admin_only>1</enable_admin_only>
+    <menu id="ConfigurationTools" xsi:type="MenuGroup" _delta="define_if_not_exists">
+      <rank>90</rank>
     </menu>
     <menu id="MailInboxes" xsi:type="OQLMenuNode" _delta="define">
-      <rank>20</rank>
-      <parent>AdminTools</parent>
+      <rank>30</rank>
+      <parent>ConfigurationTools</parent>
       <oql><![CDATA[SELECT MailInboxStandard]]></oql>
       <do_search>1</do_search>
       <enable_admin_only>1</enable_admin_only>
