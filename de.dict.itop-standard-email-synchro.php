@@ -64,7 +64,7 @@ Dict::Add('DE DE', 'German', 'Deutsch', array(
 	'Class:MailInboxStandard/Attribute:notify_errors_to' => 'Mails weiterleiten an..',
 	'Class:MailInboxStandard/Attribute:notify_errors_from' => '(Von)',
 	'MailInbox:Server' => 'Mailbox-Konfiguration',
-	'MailInbox:Behavior' => 'Verhalten be eingehenden Mails',
+	'MailInbox:Behavior' => 'Verhalten bei eingehenden Mails',
 	'MailInbox:Caller' => 'Unbekannte Melder',
 	'MailInbox:Errors' => 'Mails mit Fehlern',
 	'MailInbox:OtherContacts' => 'Verhalten bzgl. zusätzlicher Kontakte',
