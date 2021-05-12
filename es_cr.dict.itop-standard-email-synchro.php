@@ -1,5 +1,5 @@
 <?php
-// Copyright (C) 2010-2013 Combodo SARL
+// Copyright (C) 2010-2021 Combodo SARL
 //
 //   This program is free software; you can redistribute it and/or modify
 //   it under the terms of the GNU Lesser General Public License as published by
@@ -25,6 +25,7 @@ Dict::Add('ES CR', 'Spanish', 'Español, Castellaño', array(
 	'Class:MailInboxStandard/Attribute:email_storage' => 'Despues de procesar el correo',
 	'Class:MailInboxStandard/Attribute:email_storage/Value:keep' => 'Mantenerlo en el servidor de correo',
 	'Class:MailInboxStandard/Attribute:email_storage/Value:delete' => 'Borrarlo inmediatamente',
+	'Class:MailInboxStandard/Attribute:email_storage/Value:move' => 'Move to another folder~~',
 
 	'Class:MailInboxStandard/Attribute:target_class' => 'Clase Ticket',
 	'Class:MailInboxStandard/Attribute:target_class/Value:Incident' => 'Incidente',

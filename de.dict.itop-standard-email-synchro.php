@@ -1,5 +1,5 @@
 <?php
-// Copyright (C) 2010-2013 Combodo SARL, 2016-18 ITOMIG GmbH
+// Copyright (C) 2010-2021 Combodo SARL, 2016-18 ITOMIG GmbH
 //
 //   This program is free software; you can redistribute it and/or modify
 //   it under the terms of the GNU Lesser General Public License as published by
@@ -25,6 +25,7 @@ Dict::Add('DE DE', 'German', 'Deutsch', array(
 	'Class:MailInboxStandard/Attribute:email_storage' => 'Nach der Verarbeitung einer Mail',
 	'Class:MailInboxStandard/Attribute:email_storage/Value:keep' => 'Auf dem Server belassen',
 	'Class:MailInboxStandard/Attribute:email_storage/Value:delete' => 'Sofort löschen',
+	'Class:MailInboxStandard/Attribute:email_storage/Value:move' => 'Move to another folder~~',
 
 	'Class:MailInboxStandard/Attribute:target_class' => 'Ticket-Klasse',
 	'Class:MailInboxStandard/Attribute:target_class/Value:Incident' => 'Incident',

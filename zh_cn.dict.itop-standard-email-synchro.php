@@ -2,7 +2,7 @@
 /**
  * Localized data
  *
- * @copyright Copyright (C) 2010-2018 Combodo SARL
+ * @copyright Copyright (C) 2010-2021 Combodo SARL
  * @license	http://opensource.org/licenses/AGPL-3.0
  *
  * This file is part of iTop.
@@ -32,6 +32,7 @@ Dict::Add('ZH CN', 'Chinese', '简体中文', array(
 	'Class:MailInboxStandard/Attribute:email_storage' => 'After processing the eMail~~',
 	'Class:MailInboxStandard/Attribute:email_storage/Value:keep' => 'Keep it on the mail server~~',
 	'Class:MailInboxStandard/Attribute:email_storage/Value:delete' => 'Delete it immediately~~',
+	'Class:MailInboxStandard/Attribute:email_storage/Value:move' => 'Move to another folder~~',
 
 	'Class:MailInboxStandard/Attribute:target_class' => 'Ticket Class~~',
 	'Class:MailInboxStandard/Attribute:target_class/Value:Incident' => 'Incident~~',

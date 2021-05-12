@@ -19,6 +19,7 @@ Dict::Add('RU RU', 'Russian', 'Русский', array(
 	'Class:MailInboxStandard/Attribute:email_storage' => 'После обработки сообщения',
 	'Class:MailInboxStandard/Attribute:email_storage/Value:keep' => 'Оставить сообщение в п/я',
 	'Class:MailInboxStandard/Attribute:email_storage/Value:delete' => 'Удалить сообщение из п/я',
+	'Class:MailInboxStandard/Attribute:email_storage/Value:move' => 'Move to another folder~~',
 
 	'Class:MailInboxStandard/Attribute:target_class' => 'Класс тикета',
 	'Class:MailInboxStandard/Attribute:target_class/Value:Incident' => 'Инцидент',
