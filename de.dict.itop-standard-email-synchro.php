@@ -27,6 +27,9 @@ Dict::Add('DE DE', 'German', 'Deutsch', array(
 	'Class:MailInboxStandard/Attribute:email_storage/Value:delete' => 'Sofort löschen',
 	'Class:MailInboxStandard/Attribute:email_storage/Value:move' => 'Move to another folder~~',
 
+	'Class:MailInboxStandard/Attribute:target_folder' => 'Target folder~~',
+	'Class:MailInboxStandard/Attribute:target_folder+' => 'Use to move an email with the IMAP protocol~~',
+
 	'Class:MailInboxStandard/Attribute:target_class' => 'Ticket-Klasse',
 	'Class:MailInboxStandard/Attribute:target_class/Value:Incident' => 'Incident',
 	'Class:MailInboxStandard/Attribute:target_class/Value:UserRequest' => 'Benutzeranfrage',

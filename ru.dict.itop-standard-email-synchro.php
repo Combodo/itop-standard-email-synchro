@@ -21,6 +21,9 @@ Dict::Add('RU RU', 'Russian', 'Русский', array(
 	'Class:MailInboxStandard/Attribute:email_storage/Value:delete' => 'Удалить сообщение из п/я',
 	'Class:MailInboxStandard/Attribute:email_storage/Value:move' => 'Move to another folder~~',
 
+	'Class:MailInboxStandard/Attribute:target_folder' => 'Target folder~~',
+	'Class:MailInboxStandard/Attribute:target_folder+' => 'Use to move an email with the IMAP protocol~~',
+
 	'Class:MailInboxStandard/Attribute:target_class' => 'Класс тикета',
 	'Class:MailInboxStandard/Attribute:target_class/Value:Incident' => 'Инцидент',
 	'Class:MailInboxStandard/Attribute:target_class/Value:UserRequest' => 'Запрос',

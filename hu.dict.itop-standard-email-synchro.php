@@ -32,6 +32,10 @@ Dict::Add('HU HU', 'Hungarian', 'Magyar', array(
 	'Class:MailInboxStandard/Attribute:email_storage' => 'After processing the eMail~~',
 	'Class:MailInboxStandard/Attribute:email_storage/Value:keep' => 'Keep it on the mail server~~',
 	'Class:MailInboxStandard/Attribute:email_storage/Value:delete' => 'Delete it immediately~~',
+	'Class:MailInboxStandard/Attribute:email_storage/Value:move' => 'Move to another folder~~',
+
+	'Class:MailInboxStandard/Attribute:target_folder' => 'Target folder~~',
+	'Class:MailInboxStandard/Attribute:target_folder+' => 'Use to move an email with the IMAP protocol~~',
 
 	'Class:MailInboxStandard/Attribute:target_class' => 'Ticket Class~~',
 	'Class:MailInboxStandard/Attribute:target_class/Value:Incident' => 'Incident~~',

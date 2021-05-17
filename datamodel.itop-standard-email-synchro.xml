@@ -1338,9 +1338,9 @@ EOF
                      && ($this->Get('email_storage') == 'move')
                      && (MetaModel::IsValidAttCode(get_class($this), 'protocol'))
                      && ($this->Get('protocol') == 'imap')) {
-                      return(OPT_ATT_MANDATORY | parent::GetInitialStateAttributeFlags($sAttCode, $aReasons));
+                      return OPT_ATT_MANDATORY;
                    } else {
-                      return OPT_ATT_HIDDEN;
+                      return OPT_ATT_READONLY;
                    }
                  }
                  return parent::GetInitialStateAttributeFlags($sAttCode, $aReasons);
@@ -1358,9 +1358,9 @@ EOF
                      && ($this->Get('email_storage') == 'move')
                      && (MetaModel::IsValidAttCode(get_class($this), 'protocol'))
                      && ($this->Get('protocol') == 'imap'))  {
-                      return(OPT_ATT_MANDATORY | parent::GetInitialStateAttributeFlags($sAttCode, $aReasons));
+                      return OPT_ATT_MANDATORY ;
                    } else {
-                      return OPT_ATT_HIDDEN;
+                      return OPT_ATT_READONLY;
                    }
                  }
                  return parent::GetAttributeFlags($sAttCode, $aReasons, $sTargetState);
