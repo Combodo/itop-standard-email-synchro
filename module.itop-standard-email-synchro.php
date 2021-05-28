@@ -5,7 +5,7 @@
 
 SetupWebPage::AddModule(
 	__FILE__, // Path to the current file, all other file names are relative to the directory containing this file
-	'itop-standard-email-synchro/3.1.3',
+	'itop-standard-email-synchro/3.2.0',
 	array(
 		// Identification
 		//
@@ -15,7 +15,7 @@ SetupWebPage::AddModule(
 		// Setup
 		//
 		'dependencies' => array(
-			'combodo-email-synchro/3.1.3',
+			'combodo-email-synchro/3.4.0',
 			// no other dependency is listed, for backward 1.x compatibility... though this module uses implicitely the Ticket's derived classes...
 		),
 		'mandatory' => false,
