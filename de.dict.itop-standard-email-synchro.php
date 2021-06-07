@@ -25,10 +25,10 @@ Dict::Add('DE DE', 'German', 'Deutsch', array(
 	'Class:MailInboxStandard/Attribute:email_storage' => 'Nach der Verarbeitung einer Mail',
 	'Class:MailInboxStandard/Attribute:email_storage/Value:keep' => 'Auf dem Server belassen',
 	'Class:MailInboxStandard/Attribute:email_storage/Value:delete' => 'Sofort löschen',
-	'Class:MailInboxStandard/Attribute:email_storage/Value:move' => 'Move to another folder~~',
+	'Class:MailInboxStandard/Attribute:email_storage/Value:move' => 'Verschieben',
 
-	'Class:MailInboxStandard/Attribute:target_folder' => 'Target folder~~',
-	'Class:MailInboxStandard/Attribute:target_folder+' => 'Use to move an email with the IMAP protocol~~',
+	'Class:MailInboxStandard/Attribute:target_folder' => 'Zielordner',
+	'Class:MailInboxStandard/Attribute:target_folder+' => 'Ordner in den die Mail verschoben werden soll (IMAP-Protokoll wird genutzt).',
 
 	'Class:MailInboxStandard/Attribute:target_class' => 'Ticket-Klasse',
 	'Class:MailInboxStandard/Attribute:target_class/Value:Incident' => 'Incident',
