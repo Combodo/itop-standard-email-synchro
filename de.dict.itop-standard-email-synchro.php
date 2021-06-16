@@ -28,7 +28,7 @@ Dict::Add('DE DE', 'German', 'Deutsch', array(
 	'Class:MailInboxStandard/Attribute:email_storage/Value:move' => 'Verschieben',
 
 	'Class:MailInboxStandard/Attribute:target_folder' => 'Zielordner',
-	'Class:MailInboxStandard/Attribute:target_folder+' => 'Ordner in den die Mail verschoben werden soll (IMAP-Protokoll wird genutzt).',
+	'Class:MailInboxStandard/Attribute:target_folder+' => 'Ordner in den die Mail verschoben werden soll, wenn \'verschieben\' als Option gewählt wurde (IMAP-Protokoll wird genutzt).',
 
 	'Class:MailInboxStandard/Attribute:target_class' => 'Ticket-Klasse',
 	'Class:MailInboxStandard/Attribute:target_class/Value:Incident' => 'Incident',
