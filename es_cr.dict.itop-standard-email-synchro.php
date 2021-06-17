@@ -28,7 +28,7 @@ Dict::Add('ES CR', 'Spanish', 'Español, Castellaño', array(
 	'Class:MailInboxStandard/Attribute:email_storage/Value:move' => 'Move to another folder~~',
 
 	'Class:MailInboxStandard/Attribute:target_folder' => 'Target folder~~',
-	'Class:MailInboxStandard/Attribute:target_folder+' => 'Use to move an email with the IMAP protocol~~',
+	'Class:MailInboxStandard/Attribute:target_folder+' => 'Only used to move an email with the IMAP protocol~~',
 
 	'Class:MailInboxStandard/Attribute:target_class' => 'Clase Ticket',
 	'Class:MailInboxStandard/Attribute:target_class/Value:Incident' => 'Incidente',

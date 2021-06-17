@@ -28,7 +28,7 @@ Dict::Add('FR FR', 'French', 'Français', array(
 	'Class:MailInboxStandard/Attribute:email_storage/Value:move' => 'Déplacer vers un autre dossier',
 
 	'Class:MailInboxStandard/Attribute:target_folder' => 'Dossier cible',
-	'Class:MailInboxStandard/Attribute:target_folder+' => 'Utilisé pour déplacer un e-mail avec le protocole IMAP',
+	'Class:MailInboxStandard/Attribute:target_folder+' => 'Utilisé uniquement pour déplacer un e-mail avec le protocole IMAP',
 
 	'Class:MailInboxStandard/Attribute:target_class' => 'Type de Ticket',
 	'Class:MailInboxStandard/Attribute:target_class/Value:Incident' => 'Incident',
