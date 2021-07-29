@@ -751,6 +751,18 @@ EOF
 		// Try to extract what's new from the message's body
 		$this->Trace("iTop Simple Email Synchro: Updating the iTop ticket ".$oTicket->GetName()." from eMail '".$oEmail->sSubject."'");
 
+    $iCurrentUserId = UserRights::GetUserId();
+    $bInsertChangeUserId = false;
+    // Set changes author to mail author and create a new Change
+    if(method_exists('UserRights', 'GetUserFromPerson') && $oCaller !== null){
+      $oUser = UserRights::GetUserFromPerson($oCaller, true);
+      if($oUser !== null){
+            CMDBObject::SetTrackUserId($oUser->GetKey());
+            $oCMDBChange = CMDBObject::GetCurrentChange();
+            CMDBObject::SetCurrentChange(null);
+            $bInsertChangeUserId = true;
+      }
+    }
 		
 		// Process attachments
 		$aIgnoredAttachments = array();
@@ -775,7 +787,12 @@ EOF
 		}
 		
 		$oLog = $oTicket->Get($sAttCode);
-		$oLog->AddLogEntry($sCaseLogEntry, $sCallerName);
+		if($bInsertChangeUserId === true){
+		  $oLog->AddLogEntry($sCaseLogEntry, $sCallerName, $oUser->GetKey());
+		}
+		else{
+			$oLog->AddLogEntry($sCaseLogEntry, $sCallerName);
+    }
 		$oTicket->Set($sAttCode, $oLog);
 		
 		if (($this->Get('import_additional_contacts') == 'always') || ($this->Get('import_additional_contacts') == 'only_on_update'))
@@ -786,7 +803,13 @@ EOF
 		$oTicket->DBUpdate();			
 		$this->Trace("Ticket ".$oTicket->GetName()." updated.");
 		$this->AfterUpdateTicket($oTicket, $oEmail, $oCaller);
-				
+
+    // Restore previous change as current change
+    if($bInsertChangeUserId === true){
+      CMDBObject::SetTrackUserId($iCurrentUserId);
+      CMDBObject::SetCurrentChange($oCMDBChange);
+    }
+
 		return $oTicket;		
 	}]]></code>
         </method>
