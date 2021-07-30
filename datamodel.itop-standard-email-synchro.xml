@@ -462,6 +462,20 @@ EOF
 		{
 			throw new Exception('Invalid "ticket_class" configured: "'.$this->Get('target_class').'" is not a valid class. Cannot create such an object.');
 		}
+		
+		$iCurrentUserId = UserRights::GetUserId();
+    $bInsertChangeUserId = false;
+    // Set changes author to mail author and create a new Change
+    if(method_exists('UserRights', 'GetUserFromPerson') && $oCaller !== null){
+      $oUser = UserRights::GetUserFromPerson($oCaller, true);
+      if($oUser !== null){
+            CMDBObject::SetTrackUserId($oUser->GetKey());
+            $oCMDBChange = CMDBObject::GetCurrentChange();
+            CMDBObject::SetCurrentChange(null);
+            $bInsertChangeUserId = true;
+      }
+    }
+		
 		$oTicket = MetaModel::NewObject($this->Get('target_class'));
 		$oTicket->Set('org_id', $oCaller->Get('org_id'));
 		if (MetaModel::IsValidAttCode(get_class($oTicket), 'caller_id'))
@@ -543,6 +557,12 @@ EOF
 		$oTicket->DBInsert();
 		$this->Trace("Ticket ".$oTicket->GetName()." created.");
 		$this->AfterInsertTicket($oTicket, $oEmail, $oCaller, $aAddedAttachments);
+
+    // Restore previous change as current change
+    if($bInsertChangeUserId === true){
+      CMDBObject::SetTrackUserId($iCurrentUserId);
+      CMDBObject::SetCurrentChange($oCMDBChange);
+    }
 
 		return $oTicket;
 	}]]></code>
