@@ -1196,15 +1196,20 @@ EOF
 			$sRejectionReply = $this->Get('unknown_caller_rejection_reply');
 			if (!empty($sRejectionReply) && $oRawEmail)
 			{
-			    $sReplySubject = '[iTop] '.$oEmail->sSubject.' - '.$this->sLastError;
-			    $sReplyBody = str_replace("\n", "<br/>", $sRejectionReply);
-			    $sReplyTo = $oEmail->sCallerEmail;
-			    $aTo = $oRawEmail->GetTo();
-			    $sReplyFrom = $aTo[0]['email'];
-			    $this->Trace("From: ".$sReplyFrom."\nTo: ".$sReplyTo."\n".$sReplySubject."\n\n".$sReplyBody);
-			    $oRawEmail->SendAsAttachment($sReplyTo, $sReplyFrom, $sReplySubject, $sReplyBody);
+				// do not send rejection reply in case of an auto reply
+				if(!method_exists($oEmail, "IsAutoReplyEmail") || !$oEmail->IsAutoReplyEmail()){
+					$sReplySubject = '[iTop] '.$oEmail->sSubject.' - '.$this->sLastError;
+					$sReplyBody = str_replace("\n", "<br/>", $sRejectionReply);
+					$sReplyTo = $oEmail->sCallerEmail;
+					$aTo = $oRawEmail->GetTo();
+					$sReplyFrom = $aTo[0]['email'];
+					$oRawEmail->SendAsAttachment($sReplyTo, $sReplyFrom, $sReplySubject, $sReplyBody);
 
-			    $this->sLastError .= " - Replied to sender on ".date('r');
+					$this->sLastError .= " - Replied to sender on ".date('r');
+				} else {
+					$this->Trace("Email ignored as it was considered as an auto-reply");
+				}
+				$this->Trace("From: ".$sReplyFrom."\nTo: ".$sReplyTo."\n".$sReplySubject."\n\n".$sReplyBody);
 			}
 
 			// Send to contact
