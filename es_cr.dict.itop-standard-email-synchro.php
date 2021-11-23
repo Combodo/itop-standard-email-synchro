@@ -13,7 +13,7 @@
 //   You should have received a copy of the GNU General Public License
 //   along with this program; if not, write to the Free Software
 //   Foundation, Inc., 59 Temple Place, Suite 330, Boston, MA  02111-1307  USA
-Dict::Add('ES CR', 'Spanish', 'Español, Castellaño', array(
+Dict::Add('ES CR', 'Spanish', 'Español, Castellano', array(
 	// Dictionary entries go here
 	'Class:MailInboxStandard' => 'Buzón Estandard de Correo',
 	'Class:MailInboxStandard+' => 'Fuente de correo entrante',
@@ -83,7 +83,7 @@ Dict::Add('ES CR', 'Spanish', 'Español, Castellaño', array(
 // Class: MailInboxStandard
 //
 
-Dict::Add('ES CR', 'Spanish', 'Español, Castellaño', array(
+Dict::Add('ES CR', 'Spanish', 'Español, Castellano', array(
 	'Class:MailInboxStandard/Attribute:target_class/Value:Change' => 'Change~~',
 	'Class:MailInboxStandard/Attribute:target_class/Value:Change+' => '~~',
 	'Class:MailInboxStandard/Attribute:target_class/Value:RoutineChange' => 'RoutineChange~~',
