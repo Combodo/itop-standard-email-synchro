@@ -643,7 +643,7 @@ EOF
 				{
 					$oLnk = new lnkContactToTicket();
 					$oLnk->Set('contact_id', $oContact->GetKey());
-					$oContactsSet->AddObject($oLnk);
+					$oContactsSet->AddItem($oLnk);
 				}
 			}
 			else
