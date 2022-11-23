@@ -198,9 +198,9 @@ EOF
 	 * @param string $sText
 	 */</comment>
           <static>false</static>
-          <access>protected</access>
+          <access>public</access>
           <type>Overload-cmdbAbstractObject</type>
-          <code><![CDATA[	protected function Trace($sText)
+          <code><![CDATA[	public function Trace($sText)
 	{
 		parent::Trace($sText);
 		$iMaxTraceLength = 500*1024; // Maximum size of the Trace to keep in the database...
