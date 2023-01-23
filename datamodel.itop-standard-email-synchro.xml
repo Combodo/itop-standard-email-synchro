@@ -364,6 +364,10 @@ EOF
 						$sAttCode = trim($aMatches[1]);
 						$sValue = trim($aMatches[2]);
 						$aDefaultValues[$sAttCode] = $sValue;
+						if ($sAttCode == 'name')
+						{
+							$aDefaultValues[$sAttCode] .= ' - AUTOCREATED FOR: '.($oEmail->sCallerEmail);
+						}
 					}
 				}
 				$this->InitObjectFromDefaultValues($oCaller, $aDefaultValues);
