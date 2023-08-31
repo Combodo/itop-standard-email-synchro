@@ -68,6 +68,15 @@
           <default_value/>
           <is_null_allowed>true</is_null_allowed>
         </field>
+        <field id="reply_to_initial_email_behavior" xsi:type="AttributeEnum">
+          <values>
+            <value>update_related_ticket</value>
+            <value>create_new_ticket</value>
+          </values>
+          <sql>reply_to_initial_email_behavior</sql>
+          <default_value>create_new_ticket</default_value>
+          <is_null_allowed>false</is_null_allowed>
+        </field>
         <field id="unknown_caller_behavior" xsi:type="AttributeEnum">
           <values>
             <value>create_contact</value>
@@ -404,7 +413,30 @@ EOF
 	{
 		// First check if there is any iTop object mentioned in the headers of the eMail
 		$oTicket = parent::GetRelatedTicket($oEmail);
-		
+
+		if ($oTicket === null && $this->Get('reply_to_initial_email_behavior')==='update_related_ticket') {
+			if (array_key_exists('in-reply-to', $oEmail->aHeaders)) {
+				$sInReplyToMsgId = $oEmail->aHeaders['in-reply-to'];
+				$sOQL = "SELECT EmailReplica WHERE message_id = :in_reply_to";
+				$oSet = new DBObjectSet(DBObjectSearch::FromOQL($sOQL), array(), array('in_reply_to' => $sInReplyToMsgId));
+				$oSet->OptimizeColumnLoad(['EmailReplica'=>'ticket_id']);
+				$iEmailReplicaCount = $oSet->Count();
+				if ($iEmailReplicaCount > 0){
+					/** @var EmailReplica $oEmailReplica */
+					$oEmailReplica = $oSet->Fetch();
+					if ($iEmailReplicaCount > 1){
+						$this->Trace("iTop Simple Email Synchro: WARNING the message ({$oEmail->sUIDL}) replies to the message_id=".$sInReplyToMsgId."
+						This message_id corresponds to $iEmailReplicaCount email replica in iTop.");
+					}
+					$oTicket = MetaModel::GetObject('Ticket', $oEmailReplica->Get('ticket_id'), false);
+					if ($oTicket === null) {
+						$this->Trace("iTop Simple Email Synchro: WARNING the message ({$oEmail->sUIDL}) got a EmailReplica#{$oEmailReplica->GetKey()}
+						with the ticket_id={$oEmailReplica->Get('ticket_id')} but the ticket does not exist.");
+					}
+				}
+			}
+		}
+
 		if ($oTicket == null)
 		{
 			// No associated ticket found by parsing the headers, check
@@ -1448,6 +1480,9 @@ EOF
                     </item>
                     <item id="title_pattern">
                       <rank>70</rank>
+                    </item>
+                    <item id="reply_to_initial_email_behavior">
+                      <rank>75</rank>
                     </item>
                     <item id="stimuli">
                       <rank>80</rank>

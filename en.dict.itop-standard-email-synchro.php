@@ -48,6 +48,12 @@ Dict::Add('EN US', 'English', 'English', array(
 	'Class:MailInboxStandard/Attribute:title_pattern' => 'Title Pattern',
 	'Class:MailInboxStandard/Attribute:title_pattern?' => 'Use PCRE syntax, including starting and ending delimiters',
 
+    'Class:MailInboxStandard/Attribute:reply_to_initial_email_behavior' => 'Reply to initial email',
+    'Class:MailInboxStandard/Attribute:reply_to_initial_email_behavior+' =>
+    'If someone \'Reply All\' to an email that generated a ticket in your iTop, it currently creates a duplicate ticket. With this option you can choose to update the related ticket instead.',
+    'Class:MailInboxStandard/Attribute:reply_to_initial_email_behavior/Value:update_related_ticket' => 'Update related ticket',
+    'Class:MailInboxStandard/Attribute:reply_to_initial_email_behavior/Value:create_new_ticket' => 'Create a new ticket',
+
 	'Class:MailInboxStandard/Attribute:stimuli' => 'Stimuli to apply',
 	'Class:MailInboxStandard/Attribute:stimuli+' => 'Apply a stimulus when the ticket is in a given state',
 	'Class:MailInboxStandard/Attribute:stimuli?' => 'Use the format <state_code>:<stimulus_code>',
