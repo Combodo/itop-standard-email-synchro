@@ -404,9 +404,40 @@ EOF
 	{
 		// First check if there is any iTop object mentioned in the headers of the eMail
 		$oTicket = parent::GetRelatedTicket($oEmail);
-		
-		if ($oTicket == null)
-		{
+
+		if (!is_null($oTicket)){
+		  return $oTicket;
+		}
+
+		if (MetaModel::GetModuleSetting('itop-standard-email-synchro', 'aggregate_replies', true) === true) {
+			if (array_key_exists('in-reply-to', $oEmail->aHeaders)) {
+				$sInReplyToMsgId = $oEmail->aHeaders['in-reply-to'];
+				$sOQL = "SELECT EmailReplica WHERE message_id = :in_reply_to";
+				$oSet = new DBObjectSet(DBObjectSearch::FromOQL($sOQL), array(), array('in_reply_to' => $sInReplyToMsgId));
+				$oSet->OptimizeColumnLoad(['EmailReplica'=>['ticket_id']]);
+				$iEmailReplicaCount = $oSet->Count();
+				if ($iEmailReplicaCount > 0){
+					/** @var EmailReplica $oEmailReplica */
+					$oEmailReplica = $oSet->Fetch();
+					if ($iEmailReplicaCount > 1) {
+						$this->Trace("iTop Simple Email Synchro: WARNING the message ({$oEmail->sUIDL}) replies to the message_id=".$sInReplyToMsgId."
+						This message_id corresponds to $iEmailReplicaCount email replica in iTop.");
+					}
+					$oTicket = MetaModel::GetObject('Ticket', $oEmailReplica->Get('ticket_id'), false);
+					if (is_null($oTicket)) {
+						$this->Trace("iTop Simple Email Synchro: WARNING the message ({$oEmail->sUIDL}) got a EmailReplica#{$oEmailReplica->GetKey()}
+						with the ticket_id={$oEmailReplica->Get('ticket_id')} but the ticket does not exist.");
+					} elseif ($oTicket->Get("operational_status") === "closed") {
+						$this->Trace("iTop Simple Email Synchro: WARNING the message ({$oEmail->sUIDL}) is related to the CLOSED ticket {$oTicket->Get('id')}");
+						return null;
+					}
+					else {
+					  return $oTicket;
+					}
+				}
+			}
+		}
+
 			// No associated ticket found by parsing the headers, check
 			// if the subject does not match a specific pattern
 			$sPattern = $this->FixPattern($this->Get('title_pattern'));
@@ -427,7 +458,6 @@ EOF
 				    }
                 }
 			}
-		}		
 
 		return $oTicket;
 	}]]></code>
