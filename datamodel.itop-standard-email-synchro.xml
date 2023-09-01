@@ -433,6 +433,10 @@ EOF
 						$this->Trace("iTop Simple Email Synchro: WARNING the message ({$oEmail->sUIDL}) got a EmailReplica#{$oEmailReplica->GetKey()}
 						with the ticket_id={$oEmailReplica->Get('ticket_id')} but the ticket does not exist.");
 					}
+					if ($oTicket->Get("operational_status")==="closed"){
+						$this->Trace("iTop Simple Email Synchro: WARNING the message ({$oEmail->sUIDL}) is related to the CLOSED ticket {$oTicket->Get('id')}");
+						$oTicket = null;
+					}
 				}
 			}
 		}
