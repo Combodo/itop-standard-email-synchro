@@ -74,7 +74,7 @@
             <value>create_new_ticket</value>
           </values>
           <sql>reply_to_initial_email_behavior</sql>
-          <default_value>create_new_ticket</default_value>
+          <default_value>update_related_ticket</default_value>
           <is_null_allowed>false</is_null_allowed>
         </field>
         <field id="unknown_caller_behavior" xsi:type="AttributeEnum">
