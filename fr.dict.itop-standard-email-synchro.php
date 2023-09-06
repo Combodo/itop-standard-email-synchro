@@ -41,7 +41,7 @@ Dict::Add('FR FR', 'French', 'Français', array(
 	'Class:MailInboxStandard/Attribute:title_pattern?' => 'Utilisez la syntaxe PCRE avec les délimiteurs de début et de fin',
 
     'Class:MailInboxStandard/Attribute:reply_to_initial_email_behavior' => 'Aggréger les réponses',
-  'Class:MailInboxStandard/Attribute:reply_to_initial_email_behavior/Value:update_related_ticket' => 'Oui',
+    'Class:MailInboxStandard/Attribute:reply_to_initial_email_behavior/Value:update_related_ticket' => 'Oui',
     'Class:MailInboxStandard/Attribute:reply_to_initial_email_behavior/Value:create_new_ticket' => 'Non',
 
 	'Class:MailInboxStandard/Attribute:stimuli' => 'Stimuli à appliquer',
