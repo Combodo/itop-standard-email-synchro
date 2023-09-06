@@ -22,6 +22,7 @@ namespace Combodo\iTop\Test\UnitTest\CombodoEmailSynchro;
 
 use Combodo\iTop\Test\UnitTest\ItopDataTestCase;
 use EmailMessage;
+use EmailReplica;
 use MailInboxStandard;
 use MetaModel;
 use ReflectionException;
@@ -60,14 +61,30 @@ class ITopStandardEmailSynchroTest extends ItopDataTestCase
 		$oMailInboxStandard->init();
 
 		$oConfig = MetaModel::GetConfig();
-		$oConfig->SetModuleSetting('itop-standard-email-synchro', 'aggregate_answers', false);
+		$oConfig->SetModuleSetting('itop-standard-email-synchro', 'aggregate_answers', true);
+
+		$oOrganization = MetaModel::NewObject("Organization");
+		$oOrganization->Set('name', 'Org name');
+		$organisationId = $oOrganization->DBInsert();
+
+		$oTicketToInsert = MetaModel::NewObject("UserRequest");
+		$oTicketToInsert->Set('title', 'Exemple de ticket');
+		$oTicketToInsert->Set('description', 'Description de ticket');
+		$oTicketToInsert->set('org_id', $organisationId);
+		$ticketToInsertId = $oTicketToInsert->DBInsert();
+
+		$oEmailReplica = new EmailReplica();
+		$oEmailReplica->Set('message_id', 'previous-message-id');
+		$oEmailReplica->Set('ticket_id', $ticketToInsertId);
+		$oEmailReplica->DBInsert();
 
 
 
-		$this->InvokeNonPublicMethod(MailInboxStandard::class, 'GetRelatedTicket', $oMailInboxStandard, [$oEmailMessage]);
+		$oTicket = $this->InvokeNonPublicMethod(MailInboxStandard::class, 'GetRelatedTicket', $oMailInboxStandard, [$oEmailMessage]);
+		$relatedTicketClass = get_class($oTicket);
 
-
-	    $this->assertTrue(true);
+	    $this->assertEquals('UserRequest', $relatedTicketClass);
+	    $this->assertEquals($ticketToInsertId, $oTicket->Get('id'));
     }
 
 
@@ -93,6 +110,24 @@ class ITopStandardEmailSynchroTest extends ItopDataTestCase
 		$oMailInboxStandard = new MailInboxStandard();
 		$oMailInboxStandard->init();
 
+		$oConfig = MetaModel::GetConfig();
+		$oConfig->SetModuleSetting('itop-standard-email-synchro', 'aggregate_answers', true);
+
+		$oOrganization = MetaModel::NewObject("Organization");
+		$oOrganization->Set('name', 'Org name');
+		$organisationId = $oOrganization->DBInsert();
+
+		$oTicketToInsert = MetaModel::NewObject("UserRequest");
+		$oTicketToInsert->Set('title', 'Exemple de ticket');
+		$oTicketToInsert->Set('description', 'Description de ticket');
+		// $oTicketToInsert->Set('operational_status', 'closed'); // todo fix Exception : Attempting to set the value on the read-only attribute UserRequest::operational_status
+		$oTicketToInsert->Set('org_id', $organisationId);
+		$ticketToInsertId = $oTicketToInsert->DBInsert();
+
+		$oEmailReplica = new EmailReplica();
+		$oEmailReplica->Set('message_id', 'previous-message-id');
+		$oEmailReplica->Set('ticket_id', $ticketToInsertId);
+		$oEmailReplica->DBInsert();
 
 		$oTicket = $this->InvokeNonPublicMethod(MailInboxStandard::class, 'GetRelatedTicket', $oMailInboxStandard, [$oEmailMessage]);
 
