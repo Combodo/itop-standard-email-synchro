@@ -48,10 +48,6 @@ Dict::Add('EN US', 'English', 'English', array(
 	'Class:MailInboxStandard/Attribute:title_pattern' => 'Title Pattern',
 	'Class:MailInboxStandard/Attribute:title_pattern?' => 'Use PCRE syntax, including starting and ending delimiters',
 
-    'Class:MailInboxStandard/Attribute:reply_to_initial_email_behavior' => 'Aggregate replies',
-    'Class:MailInboxStandard/Attribute:reply_to_initial_email_behavior/Value:update_related_ticket' => 'Yes',
-    'Class:MailInboxStandard/Attribute:reply_to_initial_email_behavior/Value:create_new_ticket' => 'No',
-
 	'Class:MailInboxStandard/Attribute:stimuli' => 'Stimuli to apply',
 	'Class:MailInboxStandard/Attribute:stimuli+' => 'Apply a stimulus when the ticket is in a given state',
 	'Class:MailInboxStandard/Attribute:stimuli?' => 'Use the format <state_code>:<stimulus_code>',

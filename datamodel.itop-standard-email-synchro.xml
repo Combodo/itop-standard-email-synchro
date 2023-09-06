@@ -68,15 +68,6 @@
           <default_value/>
           <is_null_allowed>true</is_null_allowed>
         </field>
-        <field id="reply_to_initial_email_behavior" xsi:type="AttributeEnum">
-          <values>
-            <value>update_related_ticket</value>
-            <value>create_new_ticket</value>
-          </values>
-          <sql>reply_to_initial_email_behavior</sql>
-          <default_value>update_related_ticket</default_value>
-          <is_null_allowed>false</is_null_allowed>
-        </field>
         <field id="unknown_caller_behavior" xsi:type="AttributeEnum">
           <values>
             <value>create_contact</value>
@@ -414,12 +405,12 @@ EOF
 		// First check if there is any iTop object mentioned in the headers of the eMail
 		$oTicket = parent::GetRelatedTicket($oEmail);
 
-		if ($oTicket === null && $this->Get('reply_to_initial_email_behavior')==='update_related_ticket') {
+		if ($oTicket === null && MetaModel::GetModuleSetting('itop-standard-email-synchro', 'aggregate_answers')!==false) {
 			if (array_key_exists('in-reply-to', $oEmail->aHeaders)) {
 				$sInReplyToMsgId = $oEmail->aHeaders['in-reply-to'];
 				$sOQL = "SELECT EmailReplica WHERE message_id = :in_reply_to";
 				$oSet = new DBObjectSet(DBObjectSearch::FromOQL($sOQL), array(), array('in_reply_to' => $sInReplyToMsgId));
-				$oSet->OptimizeColumnLoad(['EmailReplica'=>'ticket_id']);
+				$oSet->OptimizeColumnLoad(['EmailReplica'=>['ticket_id']]);
 				$iEmailReplicaCount = $oSet->Count();
 				if ($iEmailReplicaCount > 0){
 					/** @var EmailReplica $oEmailReplica */
@@ -1484,9 +1475,6 @@ EOF
                     </item>
                     <item id="title_pattern">
                       <rank>70</rank>
-                    </item>
-                    <item id="reply_to_initial_email_behavior">
-                      <rank>75</rank>
                     </item>
                     <item id="stimuli">
                       <rank>80</rank>
