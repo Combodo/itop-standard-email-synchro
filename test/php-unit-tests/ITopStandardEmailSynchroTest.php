@@ -21,6 +21,7 @@
 namespace Combodo\iTop\Test\UnitTest\CombodoEmailSynchro;
 
 use Combodo\iTop\Test\UnitTest\ItopDataTestCase;
+use Config;
 use EmailMessage;
 use EmailReplica;
 use MailInboxStandard;
@@ -34,12 +35,22 @@ use MetaModel;
 class ITopStandardEmailSynchroTest extends ItopDataTestCase
 {
 
-	public function testGetRelatedTicket_related_object_in_construction(){
-		$oMailInboxStandard = new MailInboxStandard();
-		$oMailInboxStandard->init();
+	private MailInboxStandard $oMailInboxStandard;
+	private Config $oConfig;
 
-		$oConfig = MetaModel::GetConfig();
-		$oConfig->SetModuleSetting('itop-standard-email-synchro', 'aggregate_answers', true);
+	public function setUp(): void
+	{
+		parent::setUp();
+		$this->oMailInboxStandard = new MailInboxStandard();
+		$this->oMailInboxStandard->init();
+
+		$this->oConfig = MetaModel::GetConfig();
+
+	}
+
+	public function testGetRelatedTicket_related_object_in_construction(){
+
+		$this->oConfig->SetModuleSetting('itop-standard-email-synchro', 'aggregate_answers', true);
 
 		$oOrganization = MetaModel::NewObject("Organization");
 		$oOrganization->Set('name', 'Org name');
@@ -75,7 +86,8 @@ class ITopStandardEmailSynchroTest extends ItopDataTestCase
 			"decodeStatus"
 		);
 
-		$oTicket = $this->InvokeNonPublicMethod(MailInboxStandard::class, 'GetRelatedTicket', $oMailInboxStandard, [$oEmailMessage]);
+		$oTicket = $this->InvokeNonPublicMethod(MailInboxStandard::class, 'GetRelatedTicket', $this->oMailInboxStandard, [$oEmailMessage]);
+		$this->assertNotNull($oTicket);
 		$relatedTicketClass = get_class($oTicket);
 
 		$this->assertEquals('UserRequest', $relatedTicketClass);
@@ -98,15 +110,12 @@ class ITopStandardEmailSynchroTest extends ItopDataTestCase
 	        [],
 	        null,
 	        [
-				"in-reply-to" => "previous-message-id" 
+				"in-reply-to" => "previous-message-id"
 	        ],
 	        "decodeStatus"
         );
-	    $oMailInboxStandard = new MailInboxStandard();
-		$oMailInboxStandard->init();
 
-		$oConfig = MetaModel::GetConfig();
-		$oConfig->SetModuleSetting('itop-standard-email-synchro', 'aggregate_answers', true);
+		$this->oConfig->SetModuleSetting('itop-standard-email-synchro', 'aggregate_answers', true);
 
 		$oOrganization = MetaModel::NewObject("Organization");
 		$oOrganization->Set('name', 'Org name');
@@ -125,7 +134,8 @@ class ITopStandardEmailSynchroTest extends ItopDataTestCase
 
 
 
-		$oTicket = $this->InvokeNonPublicMethod(MailInboxStandard::class, 'GetRelatedTicket', $oMailInboxStandard, [$oEmailMessage]);
+		$oTicket = $this->InvokeNonPublicMethod(MailInboxStandard::class, 'GetRelatedTicket', $this->oMailInboxStandard, [$oEmailMessage]);
+		$this->assertNotNull($oTicket);
 		$relatedTicketClass = get_class($oTicket);
 
 	    $this->assertEquals('UserRequest', $relatedTicketClass);
@@ -148,15 +158,12 @@ class ITopStandardEmailSynchroTest extends ItopDataTestCase
 			[],
 			null,
 			[
-				"in-reply-to" => "previous-message-id" 
+				"in-reply-to" => "previous-message-id"
 			],
 			"decodeStatus"
 		);
-		$oMailInboxStandard = new MailInboxStandard();
-		$oMailInboxStandard->init();
 
-		$oConfig = MetaModel::GetConfig();
-		$oConfig->SetModuleSetting('itop-standard-email-synchro', 'aggregate_answers', true);
+		$this->oConfig->SetModuleSetting('itop-standard-email-synchro', 'aggregate_answers', true);
 
 		$oOrganization = MetaModel::NewObject("Organization");
 		$oOrganization->Set('name', 'Org name');
@@ -178,7 +185,8 @@ class ITopStandardEmailSynchroTest extends ItopDataTestCase
 		$oEmailReplica->Set('ticket_id', $ticketToInsertId);
 		$oEmailReplica->DBInsert();
 
-		$oTicket = $this->InvokeNonPublicMethod(MailInboxStandard::class, 'GetRelatedTicket', $oMailInboxStandard, [$oEmailMessage]);
+		$oTicket = $this->InvokeNonPublicMethod(MailInboxStandard::class, 'GetRelatedTicket', $this->oMailInboxStandard, [$oEmailMessage]);
+		$this->assertNotNull($oTicket);
 		$relatedTicketClass = get_class($oTicket);
 
 		$this->assertEquals('UserRequest', $relatedTicketClass);
@@ -206,11 +214,8 @@ class ITopStandardEmailSynchroTest extends ItopDataTestCase
 			],
 			"decodeStatus"
 		);
-		$oMailInboxStandard = new MailInboxStandard();
-		$oMailInboxStandard->init();
 
-		$oConfig = MetaModel::GetConfig();
-		$oConfig->SetModuleSetting('itop-standard-email-synchro', 'aggregate_answers', true);
+		$this->oConfig->SetModuleSetting('itop-standard-email-synchro', 'aggregate_answers', true);
 
 		$oOrganization = MetaModel::NewObject("Organization");
 		$oOrganization->Set('name', 'Org name');
@@ -228,7 +233,7 @@ class ITopStandardEmailSynchroTest extends ItopDataTestCase
 		$oEmailReplica->Set('ticket_id', $ticketToInsertId);
 		$oEmailReplica->DBInsert();
 
-		$oTicket = $this->InvokeNonPublicMethod(MailInboxStandard::class, 'GetRelatedTicket', $oMailInboxStandard, [$oEmailMessage]);
+		$oTicket = $this->InvokeNonPublicMethod(MailInboxStandard::class, 'GetRelatedTicket', $this->oMailInboxStandard, [$oEmailMessage]);
 
 
 		$this->assertEquals(null, $oTicket);
@@ -250,15 +255,12 @@ class ITopStandardEmailSynchroTest extends ItopDataTestCase
 			[],
 			null,
 			[
-				"in-reply-to" => "previous-message-id" 
+				"in-reply-to" => "previous-message-id"
 			],
 			"decodeStatus"
 		);
-		$oMailInboxStandard = new MailInboxStandard();
-		$oMailInboxStandard->init();
 
-		$oConfig = MetaModel::GetConfig();
-		$oConfig->SetModuleSetting('itop-standard-email-synchro', 'aggregate_answers', true);
+		$this->oConfig->SetModuleSetting('itop-standard-email-synchro', 'aggregate_answers', true);
 
 		$oOrganization = MetaModel::NewObject("Organization");
 		$oOrganization->Set('name', 'Org name');
@@ -276,7 +278,7 @@ class ITopStandardEmailSynchroTest extends ItopDataTestCase
 		$oEmailReplica->Set('ticket_id', -12);
 		$oEmailReplica->DBInsert();
 
-		$oTicket = $this->InvokeNonPublicMethod(MailInboxStandard::class, 'GetRelatedTicket', $oMailInboxStandard, [$oEmailMessage]);
+		$oTicket = $this->InvokeNonPublicMethod(MailInboxStandard::class, 'GetRelatedTicket', $this->oMailInboxStandard, [$oEmailMessage]);
 
 
 		$this->assertEquals(null, $oTicket);
@@ -303,10 +305,10 @@ class ITopStandardEmailSynchroTest extends ItopDataTestCase
 			],
 			"decodeStatus"
 		);
-		$oMailInboxStandard = new MailInboxStandard();
-		$oMailInboxStandard->init();
+		$this->oMailInboxStandard = new MailInboxStandard();
+		$this->oMailInboxStandard->init();
 
-		$oTicket = $this->InvokeNonPublicMethod(MailInboxStandard::class, 'GetRelatedTicket', $oMailInboxStandard, [$oEmailMessage]);
+		$oTicket = $this->InvokeNonPublicMethod(MailInboxStandard::class, 'GetRelatedTicket', $this->oMailInboxStandard, [$oEmailMessage]);
 
 
 		$this->assertEquals(null, $oTicket);
@@ -332,13 +334,11 @@ class ITopStandardEmailSynchroTest extends ItopDataTestCase
 			],
 			"decodeStatus"
 		);
-		$oMailInboxStandard = new MailInboxStandard();
-		$oMailInboxStandard->init();
-		$oConfig = MetaModel::GetConfig();
-		$oConfig->SetModuleSetting('itop-standard-email-synchro', 'aggregate_answers', false);
+
+		$this->oConfig->SetModuleSetting('itop-standard-email-synchro', 'aggregate_answers', false);
 
 
-		$oTicket = $this->InvokeNonPublicMethod(MailInboxStandard::class, 'GetRelatedTicket', $oMailInboxStandard, [$oEmailMessage]);
+		$oTicket = $this->InvokeNonPublicMethod(MailInboxStandard::class, 'GetRelatedTicket', $this->oMailInboxStandard, [$oEmailMessage]);
 
 
 		$this->assertEquals(null, $oTicket);

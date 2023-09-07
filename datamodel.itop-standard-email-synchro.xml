@@ -405,6 +405,10 @@ EOF
 		// First check if there is any iTop object mentioned in the headers of the eMail
 		$oTicket = parent::GetRelatedTicket($oEmail);
 
+		if (!is_null($oTicket)){
+		  return $oTicket;
+		}
+
 		if ($oTicket === null && MetaModel::GetModuleSetting('itop-standard-email-synchro', 'aggregate_answers')!==false) {
 			if (array_key_exists('in-reply-to', $oEmail->aHeaders)) {
 				$sInReplyToMsgId = $oEmail->aHeaders['in-reply-to'];
@@ -420,19 +424,20 @@ EOF
 						This message_id corresponds to $iEmailReplicaCount email replica in iTop.");
 					}
 					$oTicket = MetaModel::GetObject('Ticket', $oEmailReplica->Get('ticket_id'), false);
-					if ($oTicket === null) {
+					if (is_null($oTicket)) {
 						$this->Trace("iTop Simple Email Synchro: WARNING the message ({$oEmail->sUIDL}) got a EmailReplica#{$oEmailReplica->GetKey()}
 						with the ticket_id={$oEmailReplica->Get('ticket_id')} but the ticket does not exist.");
 					} elseif ($oTicket->Get("operational_status") === "closed") {
 						$this->Trace("iTop Simple Email Synchro: WARNING the message ({$oEmail->sUIDL}) is related to the CLOSED ticket {$oTicket->Get('id')}");
 						$oTicket = null;
 					}
+					else {
+					  return $oTicket;
+					}
 				}
 			}
 		}
 
-		if ($oTicket == null)
-		{
 			// No associated ticket found by parsing the headers, check
 			// if the subject does not match a specific pattern
 			$sPattern = $this->FixPattern($this->Get('title_pattern'));
@@ -453,7 +458,6 @@ EOF
 				    }
                 }
 			}
-		}		
 
 		return $oTicket;
 	}]]></code>
