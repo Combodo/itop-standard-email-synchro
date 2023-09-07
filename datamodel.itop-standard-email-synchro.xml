@@ -415,7 +415,7 @@ EOF
 				if ($iEmailReplicaCount > 0){
 					/** @var EmailReplica $oEmailReplica */
 					$oEmailReplica = $oSet->Fetch();
-					if ($iEmailReplicaCount > 1){
+					if ($iEmailReplicaCount > 1) {
 						$this->Trace("iTop Simple Email Synchro: WARNING the message ({$oEmail->sUIDL}) replies to the message_id=".$sInReplyToMsgId."
 						This message_id corresponds to $iEmailReplicaCount email replica in iTop.");
 					}
@@ -423,8 +423,7 @@ EOF
 					if ($oTicket === null) {
 						$this->Trace("iTop Simple Email Synchro: WARNING the message ({$oEmail->sUIDL}) got a EmailReplica#{$oEmailReplica->GetKey()}
 						with the ticket_id={$oEmailReplica->Get('ticket_id')} but the ticket does not exist.");
-					}
-					if ($oTicket->Get("operational_status")==="closed"){
+					} elseif ($oTicket->Get("operational_status") === "closed") {
 						$this->Trace("iTop Simple Email Synchro: WARNING the message ({$oEmail->sUIDL}) is related to the CLOSED ticket {$oTicket->Get('id')}");
 						$oTicket = null;
 					}

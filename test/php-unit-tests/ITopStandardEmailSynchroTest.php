@@ -25,7 +25,6 @@ use EmailMessage;
 use EmailReplica;
 use MailInboxStandard;
 use MetaModel;
-use ReflectionException;
 
 /**
  * @runTestsInSeparateProcesses
@@ -34,11 +33,57 @@ use ReflectionException;
  */
 class ITopStandardEmailSynchroTest extends ItopDataTestCase
 {
-	/**
-	 * @throws ReflectionException
-	 */
-	public function testGetRelatedTicket(){
 
+	public function testGetRelatedTicket_related_object_in_construction(){
+		$oMailInboxStandard = new MailInboxStandard();
+		$oMailInboxStandard->init();
+
+		$oConfig = MetaModel::GetConfig();
+		$oConfig->SetModuleSetting('itop-standard-email-synchro', 'aggregate_answers', true);
+
+		$oOrganization = MetaModel::NewObject("Organization");
+		$oOrganization->Set('name', 'Org name');
+		$organisationId = $oOrganization->DBInsert();
+
+		$oTicketToInsert = MetaModel::NewObject("UserRequest");
+		$oTicketToInsert->Set('title', 'Exemple de ticket');
+		$oTicketToInsert->Set('description', 'Description de ticket');
+		$oTicketToInsert->set('org_id', $organisationId);
+		$ticketToInsertId = $oTicketToInsert->DBInsert();
+
+		$oEmailReplica = new EmailReplica();
+		$oEmailReplica->Set('message_id', 'previous-message-id');
+		$oEmailReplica->Set('ticket_id', $ticketToInsertId);
+		$oEmailReplica->DBInsert();
+
+		$oEmailMessage = new EmailMessage(
+			"UIDL",
+			"messageId",
+			"The ticket R-0000XX was created",
+			"xxx.xxx@combodo.com",
+			"xxx",
+			"recipient",
+			[],
+			"1",
+			"myBodyText",
+			"UTF-8",
+			[],
+			$oTicketToInsert,
+			[
+				"in-reply-to" => "previous-message-id"
+			],
+			"decodeStatus"
+		);
+
+		$oTicket = $this->InvokeNonPublicMethod(MailInboxStandard::class, 'GetRelatedTicket', $oMailInboxStandard, [$oEmailMessage]);
+		$relatedTicketClass = get_class($oTicket);
+
+		$this->assertEquals('UserRequest', $relatedTicketClass);
+		$this->assertEquals($ticketToInsertId, $oTicket->Get('id'));
+	}
+
+
+	public function testGetRelatedTicket_in_reply_field_update_ticket(){
         $oEmailMessage = new EmailMessage(
 			"UIDL",
 			"messageId",
@@ -53,7 +98,7 @@ class ITopStandardEmailSynchroTest extends ItopDataTestCase
 	        [],
 	        null,
 	        [
-				"in-reply-to" => "previous-message-id" // with provider later
+				"in-reply-to" => "previous-message-id" 
 	        ],
 	        "decodeStatus"
         );
@@ -88,8 +133,7 @@ class ITopStandardEmailSynchroTest extends ItopDataTestCase
     }
 
 
-	public function testClosedRelatedTicket(){
-
+	public function testGetRelatedTicket_duplicate_email_replica(){
 		$oEmailMessage = new EmailMessage(
 			"UIDL",
 			"messageId",
@@ -104,6 +148,7 @@ class ITopStandardEmailSynchroTest extends ItopDataTestCase
 			[],
 			null,
 			[
+				"in-reply-to" => "previous-message-id" 
 			],
 			"decodeStatus"
 		);
@@ -120,7 +165,61 @@ class ITopStandardEmailSynchroTest extends ItopDataTestCase
 		$oTicketToInsert = MetaModel::NewObject("UserRequest");
 		$oTicketToInsert->Set('title', 'Exemple de ticket');
 		$oTicketToInsert->Set('description', 'Description de ticket');
-		// $oTicketToInsert->Set('operational_status', 'closed'); // todo fix Exception : Attempting to set the value on the read-only attribute UserRequest::operational_status
+		$oTicketToInsert->set('org_id', $organisationId);
+		$ticketToInsertId = $oTicketToInsert->DBInsert();
+
+		$oEmailReplica = new EmailReplica();
+		$oEmailReplica->Set('message_id', 'previous-message-id');
+		$oEmailReplica->Set('ticket_id', $ticketToInsertId);
+		$oEmailReplica->DBInsert();
+
+		$oEmailReplica = new EmailReplica();
+		$oEmailReplica->Set('message_id', 'previous-message-id');
+		$oEmailReplica->Set('ticket_id', $ticketToInsertId);
+		$oEmailReplica->DBInsert();
+
+		$oTicket = $this->InvokeNonPublicMethod(MailInboxStandard::class, 'GetRelatedTicket', $oMailInboxStandard, [$oEmailMessage]);
+		$relatedTicketClass = get_class($oTicket);
+
+		$this->assertEquals('UserRequest', $relatedTicketClass);
+		$this->assertEquals($ticketToInsertId, $oTicket->Get('id'));
+}
+
+
+	public function testGetRelatedTicket_closed_related_ticket(){
+
+		$oEmailMessage = new EmailMessage(
+			"UIDL",
+			"messageId",
+			"subject",
+			"xxx.xxx@combodo.com",
+			"xxx",
+			"recipient",
+			[],
+			"1",
+			"myBodyText",
+			"UTF-8",
+			[],
+			null,
+			[
+				"in-reply-to" => "previous-message-id"
+			],
+			"decodeStatus"
+		);
+		$oMailInboxStandard = new MailInboxStandard();
+		$oMailInboxStandard->init();
+
+		$oConfig = MetaModel::GetConfig();
+		$oConfig->SetModuleSetting('itop-standard-email-synchro', 'aggregate_answers', true);
+
+		$oOrganization = MetaModel::NewObject("Organization");
+		$oOrganization->Set('name', 'Org name');
+		$organisationId = $oOrganization->DBInsert();
+
+		$oTicketToInsert = MetaModel::NewObject("UserRequest");
+		$oTicketToInsert->Set('status', 'closed');
+		$oTicketToInsert->Set('title', 'Exemple de ticket');
+		$oTicketToInsert->Set('description', 'Description de ticket');
 		$oTicketToInsert->Set('org_id', $organisationId);
 		$ticketToInsertId = $oTicketToInsert->DBInsert();
 
@@ -135,7 +234,7 @@ class ITopStandardEmailSynchroTest extends ItopDataTestCase
 		$this->assertEquals(null, $oTicket);
 	}
 
-	public function testNoInReplyField(){
+	public function testGetRelatedTicket_replica_not_linked_to_ticket(){
 
 		$oEmailMessage = new EmailMessage(
 			"UIDL",
@@ -151,7 +250,56 @@ class ITopStandardEmailSynchroTest extends ItopDataTestCase
 			[],
 			null,
 			[
-				"in-reply-to" => "previous-message-id" // with provider later
+				"in-reply-to" => "previous-message-id" 
+			],
+			"decodeStatus"
+		);
+		$oMailInboxStandard = new MailInboxStandard();
+		$oMailInboxStandard->init();
+
+		$oConfig = MetaModel::GetConfig();
+		$oConfig->SetModuleSetting('itop-standard-email-synchro', 'aggregate_answers', true);
+
+		$oOrganization = MetaModel::NewObject("Organization");
+		$oOrganization->Set('name', 'Org name');
+		$organisationId = $oOrganization->DBInsert();
+
+		$oTicketToInsert = MetaModel::NewObject("UserRequest");
+		$oTicketToInsert->Set('status', 'closed');
+		$oTicketToInsert->Set('title', 'Exemple de ticket');
+		$oTicketToInsert->Set('description', 'Description de ticket');
+		$oTicketToInsert->Set('org_id', $organisationId);
+		$ticketToInsertId = $oTicketToInsert->DBInsert();
+
+		$oEmailReplica = new EmailReplica();
+		$oEmailReplica->Set('message_id', 'previous-message-id');
+		$oEmailReplica->Set('ticket_id', -12);
+		$oEmailReplica->DBInsert();
+
+		$oTicket = $this->InvokeNonPublicMethod(MailInboxStandard::class, 'GetRelatedTicket', $oMailInboxStandard, [$oEmailMessage]);
+
+
+		$this->assertEquals(null, $oTicket);
+	}
+
+
+	public function testGetRelatedTicket_no_in_reply_field(){
+
+		$oEmailMessage = new EmailMessage(
+			"UIDL",
+			"messageId",
+			"subject",
+			"xxx.xxx@combodo.com",
+			"xxx",
+			"recipient",
+			[],
+			"1",
+			"myBodyText",
+			"UTF-8",
+			[],
+			null,
+			[
+				"in-reply-to" => "previous-message-id" 
 			],
 			"decodeStatus"
 		);
@@ -164,7 +312,7 @@ class ITopStandardEmailSynchroTest extends ItopDataTestCase
 		$this->assertEquals(null, $oTicket);
 	}
 
-	public function testConfModuleFalse(){
+	public function testGetRelatedTicket_conf_aggregate_answers_false(){
 
 		$oEmailMessage = new EmailMessage(
 			"UIDL",
@@ -180,7 +328,7 @@ class ITopStandardEmailSynchroTest extends ItopDataTestCase
 			[],
 			null,
 			[
-				"in-reply-to" => "previous-message-id" // with provider later
+				"in-reply-to" => "previous-message-id" 
 			],
 			"decodeStatus"
 		);
@@ -194,15 +342,6 @@ class ITopStandardEmailSynchroTest extends ItopDataTestCase
 
 
 		$this->assertEquals(null, $oTicket);
-
-
-		// scenarios :
-		// parent::GetRelatedTicket($oEmail) => return null, sinon tout le reste => never call
-		// message id du in-reply-to => mock DBObjectSet, retourne 1 objet => assert typeof sur le getobject
-		// etat closed => return null
-		//
-
-		// si pethode protected (par ex) : $this->InvokeNonPublicStaticMethod
 	}
 
 }
