@@ -26,11 +26,6 @@ use EmailMessage;
 use EmailReplica;
 use MetaModel;
 
-/**
- * @runTestsInSeparateProcesses
- * @preserveGlobalState disabled
- * @backupGlobals disabled
- */
 class ITopStandardEmailSynchroTest extends ItopDataTestCase
 {
 
