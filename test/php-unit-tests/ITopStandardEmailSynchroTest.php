@@ -18,13 +18,12 @@
 //
 
 
-namespace Combodo\iTop\Test\UnitTest\CombodoEmailSynchro;
+namespace Combodo\iTop\Extension\Test;
 
 use Combodo\iTop\Test\UnitTest\ItopDataTestCase;
 use Config;
 use EmailMessage;
 use EmailReplica;
-use MailInboxStandard;
 use MetaModel;
 
 /**
@@ -41,6 +40,8 @@ class ITopStandardEmailSynchroTest extends ItopDataTestCase
 	public function setUp(): void
 	{
 		parent::setUp();
+		@require_once(APPROOT . 'env-production/combodo-ldap-synchro-configuration/vendor/autoload.php');
+		require_once(APPROOT . 'setup/parameters.class.inc.php');
 		$this->oMailInboxStandard = new MailInboxStandard();
 		$this->oMailInboxStandard->init();
 
