@@ -94,8 +94,59 @@ class ITopStandardEmailSynchroTest extends ItopDataTestCase
 		$this->assertEquals($ticketToInsertId, $oTicket->Get('id'));
 	}
 
+    public function testGetRelatedTicket_related_title_correspondance(){
 
-	public function testGetRelatedTicket_in_reply_field_update_ticket(){
+		$this->oMailInboxStandard->Set('title_pattern', '/R-([0-9]+)/');
+		//
+
+	    $this->oConfig->SetModuleSetting('itop-standard-email-synchro', 'aggregate_answers', true);
+
+        $oOrganization = MetaModel::NewObject("Organization");
+        $oOrganization->Set('name', 'Org name');
+        $organisationId = $oOrganization->DBInsert();
+
+        $oTicketToInsert = MetaModel::NewObject("UserRequest");
+        $oTicketToInsert->Set('title', 'Exemple de ticket');
+        $oTicketToInsert->Set('description', 'Description de ticket');
+        $oTicketToInsert->set('org_id', $organisationId);
+	    $ticketToInsertId = $oTicketToInsert->DBInsert();
+	    $oTicketToInsert->set('ref', 'R-0000'.$ticketToInsertId);
+	    $oTicketToInsert->DBUpdate();
+
+	    $oEmailReplica = new EmailReplica();
+        $oEmailReplica->Set('message_id', 'previous-message-id');
+        $oEmailReplica->Set('ticket_id', $ticketToInsertId);
+        $oEmailReplica->DBInsert();
+
+        $oEmailMessage = new EmailMessage(
+            "UIDL",
+            "messageId",
+            "The ticket R-0000".$ticketToInsertId." was created",
+            "xxx.xxx@combodo.com",
+            "xxx",
+            "recipient",
+            [],
+            "1",
+            "myBodyText",
+            "UTF-8",
+            [],
+            null,
+            [
+            ],
+            "decodeStatus"
+        );
+
+        $oTicket = $this->InvokeNonPublicMethod(MailInboxStandard::class, 'GetRelatedTicket', $this->oMailInboxStandard, [$oEmailMessage]);
+        $this->assertNotNull($oTicket);
+        $relatedTicketClass = get_class($oTicket);
+
+        $this->assertEquals('UserRequest', $relatedTicketClass);
+        $this->assertEquals($ticketToInsertId, $oTicket->Get('id'));
+    }
+
+
+
+    public function testGetRelatedTicket_in_reply_field_update_ticket(){
         $oEmailMessage = new EmailMessage(
 			"UIDL",
 			"messageId",
