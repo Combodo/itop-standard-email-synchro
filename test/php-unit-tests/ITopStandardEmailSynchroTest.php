@@ -78,7 +78,7 @@ class ITopStandardEmailSynchroTest extends ItopDataTestCase
 			"myBodyText",
 			"UTF-8",
 			[],
-			$this->oTicket->GetKey(),
+			$this->oTicket,
 			[
 				"in-reply-to" => "previous-message-id"
 			],
