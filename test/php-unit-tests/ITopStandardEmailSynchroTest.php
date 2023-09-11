@@ -39,7 +39,12 @@ class ITopStandardEmailSynchroTest extends ItopDataTestCase
 	public function setUp(): void
 	{
 		parent::setUp();
-		$this->oMailInboxStandard = MetaModel::NewObject(MailInboxStandard::class);
+		$this->oMailInboxStandard = $this->createObject(MailInboxStandard::class,
+			[
+				'server' => 'server' . uniqid(),
+				'login' => 'login' . uniqid(),
+			]);
+		//$this->oMailInboxStandard = MetaModel::NewObject(MailInboxStandard::class);
 
 		$oOrg = $this->createObject(Organization::class, ['name' => 'Org name']);
 
