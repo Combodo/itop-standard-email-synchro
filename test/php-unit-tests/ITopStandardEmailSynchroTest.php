@@ -48,20 +48,21 @@ class ITopStandardEmailSynchroTest extends ItopDataTestCase
 
 		$this->oConfig->SetModuleSetting('itop-standard-email-synchro', 'aggregate_replies', true);
 
-		$oOrganization = MetaModel::NewObject("Organization");
-		$oOrganization->Set('name', 'Org name');
-		$organisationId = $oOrganization->DBInsert();
+		$oOrg = $this->createObject(\Organization::class, ['name' => 'Org name']);
+		$oTicket = $this->createObject(\UserRequest::class,
+			[
+				'title' => 'Exemple de ticket',
+				'description' => 'Description de ticket',
+				'org_id' => $oOrg->GetKey(),
+			]
+		);
+		$oEmailReplica = $this->createObject(\EmailReplica::class,
+			[
+				'message_id' => 'previous-message-id',
+				'ticket_id' => $oTicket->GetKey(),
+			]
+		);
 
-		$oTicketToInsert = MetaModel::NewObject("UserRequest");
-		$oTicketToInsert->Set('title', 'Exemple de ticket');
-		$oTicketToInsert->Set('description', 'Description de ticket');
-		$oTicketToInsert->set('org_id', $organisationId);
-		$ticketToInsertId = $oTicketToInsert->DBInsert();
-
-		$oEmailReplica = new EmailReplica();
-		$oEmailReplica->Set('message_id', 'previous-message-id');
-		$oEmailReplica->Set('ticket_id', $ticketToInsertId);
-		$oEmailReplica->DBInsert();
 
 		$oEmailMessage = new EmailMessage(
 			"UIDL",
@@ -75,19 +76,17 @@ class ITopStandardEmailSynchroTest extends ItopDataTestCase
 			"myBodyText",
 			"UTF-8",
 			[],
-			$oTicketToInsert,
+			$oTicket->GetKey(),
 			[
 				"in-reply-to" => "previous-message-id"
 			],
 			"decodeStatus"
 		);
 
-		$oTicket = $this->InvokeNonPublicMethod(MailInboxStandard::class, 'GetRelatedTicket', $this->oMailInboxStandard, [$oEmailMessage]);
-		$this->assertNotNull($oTicket);
-		$relatedTicketClass = get_class($oTicket);
-
-		$this->assertEquals('UserRequest', $relatedTicketClass);
-		$this->assertEquals($ticketToInsertId, $oTicket->Get('id'));
+		$oTicketFromGetRelatedTicket = $this->InvokeNonPublicMethod(MailInboxStandard::class, 'GetRelatedTicket', $this->oMailInboxStandard, [$oEmailMessage]);
+		$this->assertNotNull($oTicketFromGetRelatedTicket);
+		$this->assertEquals(\UserRequest::class, get_class($oTicketFromGetRelatedTicket));
+		$this->assertEquals($oTicket->GetKey(), $oTicketFromGetRelatedTicket->GetKey());
 	}
 
     public function testGetRelatedTicket_related_title_correspondance(){
