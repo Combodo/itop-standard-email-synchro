@@ -49,6 +49,7 @@ class ITopStandardEmailSynchroTest extends ItopDataTestCase
 		$this->oConfig->SetModuleSetting('itop-standard-email-synchro', 'aggregate_replies', true);
 
 		$oOrg = $this->createObject(\Organization::class, ['name' => 'Org name']);
+
 		$oTicket = $this->createObject(\UserRequest::class,
 			[
 				'title' => 'Exemple de ticket',
@@ -56,13 +57,13 @@ class ITopStandardEmailSynchroTest extends ItopDataTestCase
 				'org_id' => $oOrg->GetKey(),
 			]
 		);
-		$oEmailReplica = $this->createObject(\EmailReplica::class,
+
+		$this->createObject(\EmailReplica::class,
 			[
 				'message_id' => 'previous-message-id',
 				'ticket_id' => $oTicket->GetKey(),
 			]
 		);
-
 
 		$oEmailMessage = new EmailMessage(
 			"UIDL",
@@ -85,7 +86,7 @@ class ITopStandardEmailSynchroTest extends ItopDataTestCase
 
 		$oTicketFromGetRelatedTicket = $this->InvokeNonPublicMethod(MailInboxStandard::class, 'GetRelatedTicket', $this->oMailInboxStandard, [$oEmailMessage]);
 		$this->assertNotNull($oTicketFromGetRelatedTicket);
-		$this->assertEquals(\UserRequest::class, get_class($oTicketFromGetRelatedTicket));
+		$this->assertEquals('UserRequest', get_class($oTicketFromGetRelatedTicket));
 		$this->assertEquals($oTicket->GetKey(), $oTicketFromGetRelatedTicket->GetKey());
 	}
 
