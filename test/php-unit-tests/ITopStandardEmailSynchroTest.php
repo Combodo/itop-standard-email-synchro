@@ -20,6 +20,7 @@
 
 namespace Combodo\iTop\Extension\Test;
 
+use CMDBObject;
 use Combodo\iTop\Test\UnitTest\ItopDataTestCase;
 use Config;
 use EmailMessage;
@@ -40,6 +41,7 @@ class ITopStandardEmailSynchroTest extends ItopDataTestCase
 		$this->oMailInboxStandard->init();
 
 		$this->oConfig = MetaModel::GetConfig();
+		CMDBObject::SetCurrentChange(null);
 
 	}
 
