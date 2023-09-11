@@ -58,7 +58,7 @@
         <item>itop-portal</item>
         <item>itop-full-itil</item>
         <item>authent-token</item>
-        <item>combodo-intercom-integration</item>
+        <item>combodo-email-synchro</item>
         <item>itop-standard-email-synchro</item>
     </selected_modules>
     <selected_extensions type="array">
@@ -74,7 +74,6 @@
         <item>itop-ticket-mgmt-itil-enhanced-portal</item>
         <item>itop-change-mgmt-none</item>
         <item>combodo-mail-to-ticket-automation</item>
-        <item>combodo-intercom-integration</item>
     </selected_extensions>
     <sample_data>1</sample_data>
     <old_addon></old_addon>
