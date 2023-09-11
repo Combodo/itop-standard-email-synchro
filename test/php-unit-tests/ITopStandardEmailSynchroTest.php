@@ -163,14 +163,14 @@ class ITopStandardEmailSynchroTest extends ItopDataTestCase
 
 		$this->oConfig->SetModuleSetting('itop-standard-email-synchro', 'aggregate_replies', true);
 
-		$oOrganization = MetaModel::NewObject("Organization");
-		$oOrganization->Set('name', 'Org name');
-		$organisationId = $oOrganization->DBInsert();
+		$oOrganization = $this->createObject('Organization', ["name"=>"Org name"]);
+		//$oOrganization->Set('name', 'Org name');
+		//$organisationId = $oOrganization->DBInsert();
 
 		$oTicketToInsert = MetaModel::NewObject("UserRequest");
 		$oTicketToInsert->Set('title', 'Exemple de ticket');
 		$oTicketToInsert->Set('description', 'Description de ticket');
-		$oTicketToInsert->set('org_id', $organisationId);
+		$oTicketToInsert->set('org_id', $oOrganization->GetKey());
 		$ticketToInsertId = $oTicketToInsert->DBInsert();
 
 		$oEmailReplica = new EmailReplica();
