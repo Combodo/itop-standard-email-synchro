@@ -25,6 +25,7 @@ use Config;
 use EmailMessage;
 use EmailReplica;
 use MetaModel;
+use MailInboxStandard;
 
 class ITopStandardEmailSynchroTest extends ItopDataTestCase
 {
@@ -46,7 +47,7 @@ class ITopStandardEmailSynchroTest extends ItopDataTestCase
 
 	public function testGetRelatedTicket_related_object_in_construction(){
 
-		$this->oConfig->SetModuleSetting('itop-standard-email-synchro', 'aggregate_answers', true);
+		$this->oConfig->SetModuleSetting('itop-standard-email-synchro', 'aggregate_replies', true);
 
 		$oOrganization = MetaModel::NewObject("Organization");
 		$oOrganization->Set('name', 'Org name');
@@ -95,7 +96,7 @@ class ITopStandardEmailSynchroTest extends ItopDataTestCase
 		$this->oMailInboxStandard->Set('title_pattern', '/R-([0-9]+)/');
 		//
 
-	    $this->oConfig->SetModuleSetting('itop-standard-email-synchro', 'aggregate_answers', true);
+	    $this->oConfig->SetModuleSetting('itop-standard-email-synchro', 'aggregate_replies', true);
 
         $oOrganization = MetaModel::NewObject("Organization");
         $oOrganization->Set('name', 'Org name');
@@ -162,7 +163,7 @@ class ITopStandardEmailSynchroTest extends ItopDataTestCase
 	        "decodeStatus"
         );
 
-		$this->oConfig->SetModuleSetting('itop-standard-email-synchro', 'aggregate_answers', true);
+		$this->oConfig->SetModuleSetting('itop-standard-email-synchro', 'aggregate_replies', true);
 
 		$oOrganization = MetaModel::NewObject("Organization");
 		$oOrganization->Set('name', 'Org name');
@@ -210,7 +211,7 @@ class ITopStandardEmailSynchroTest extends ItopDataTestCase
 			"decodeStatus"
 		);
 
-		$this->oConfig->SetModuleSetting('itop-standard-email-synchro', 'aggregate_answers', true);
+		$this->oConfig->SetModuleSetting('itop-standard-email-synchro', 'aggregate_replies', true);
 
 		$oOrganization = MetaModel::NewObject("Organization");
 		$oOrganization->Set('name', 'Org name');
@@ -262,7 +263,7 @@ class ITopStandardEmailSynchroTest extends ItopDataTestCase
 			"decodeStatus"
 		);
 
-		$this->oConfig->SetModuleSetting('itop-standard-email-synchro', 'aggregate_answers', true);
+		$this->oConfig->SetModuleSetting('itop-standard-email-synchro', 'aggregate_replies', true);
 
 		$oOrganization = MetaModel::NewObject("Organization");
 		$oOrganization->Set('name', 'Org name');
@@ -307,7 +308,7 @@ class ITopStandardEmailSynchroTest extends ItopDataTestCase
 			"decodeStatus"
 		);
 
-		$this->oConfig->SetModuleSetting('itop-standard-email-synchro', 'aggregate_answers', true);
+		$this->oConfig->SetModuleSetting('itop-standard-email-synchro', 'aggregate_replies', true);
 
 		$oOrganization = MetaModel::NewObject("Organization");
 		$oOrganization->Set('name', 'Org name');
@@ -361,7 +362,7 @@ class ITopStandardEmailSynchroTest extends ItopDataTestCase
 		$this->assertEquals(null, $oTicket);
 	}
 
-	public function testGetRelatedTicket_conf_aggregate_answers_false(){
+	public function testGetRelatedTicket_conf_aggregate_replies_false(){
 
 		$oEmailMessage = new EmailMessage(
 			"UIDL",
@@ -382,7 +383,7 @@ class ITopStandardEmailSynchroTest extends ItopDataTestCase
 			"decodeStatus"
 		);
 
-		$this->oConfig->SetModuleSetting('itop-standard-email-synchro', 'aggregate_answers', false);
+		$this->oConfig->SetModuleSetting('itop-standard-email-synchro', 'aggregate_replies', false);
 
 
 		$oTicket = $this->InvokeNonPublicMethod(MailInboxStandard::class, 'GetRelatedTicket', $this->oMailInboxStandard, [$oEmailMessage]);
