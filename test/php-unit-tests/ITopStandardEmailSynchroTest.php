@@ -37,11 +37,10 @@ class ITopStandardEmailSynchroTest extends ItopDataTestCase
 	public function setUp(): void
 	{
 		parent::setUp();
-		$this->oMailInboxStandard = new MailInboxStandard();
-		$this->oMailInboxStandard->init();
+		$this->oMailInboxStandard = MetaModel::NewObject(MailInboxStandard::class);
 
 		$this->oConfig = MetaModel::GetConfig();
-		CMDBObject::SetCurrentChange(null);
+		//CMDBObject::SetCurrentChange(null);
 
 	}
 
@@ -353,8 +352,7 @@ class ITopStandardEmailSynchroTest extends ItopDataTestCase
 			],
 			"decodeStatus"
 		);
-		$this->oMailInboxStandard = new MailInboxStandard();
-		$this->oMailInboxStandard->init();
+
 
 		$oTicket = $this->InvokeNonPublicMethod(MailInboxStandard::class, 'GetRelatedTicket', $this->oMailInboxStandard, [$oEmailMessage]);
 
