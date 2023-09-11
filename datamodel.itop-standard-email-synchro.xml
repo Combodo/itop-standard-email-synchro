@@ -409,7 +409,7 @@ EOF
 		  return $oTicket;
 		}
 
-		if (MetaModel::GetModuleSetting('itop-standard-email-synchro', 'aggregate_replies')!==false) {
+		if (MetaModel::GetModuleSetting('itop-standard-email-synchro', 'aggregate_replies', true) === true) {
 			if (array_key_exists('in-reply-to', $oEmail->aHeaders)) {
 				$sInReplyToMsgId = $oEmail->aHeaders['in-reply-to'];
 				$sOQL = "SELECT EmailReplica WHERE message_id = :in_reply_to";
