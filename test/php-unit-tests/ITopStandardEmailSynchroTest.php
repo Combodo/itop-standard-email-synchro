@@ -36,8 +36,6 @@ class ITopStandardEmailSynchroTest extends ItopDataTestCase
 	public function setUp(): void
 	{
 		parent::setUp();
-		@require_once(APPROOT . 'env-production/combodo-ldap-synchro-configuration/vendor/autoload.php');
-		require_once(APPROOT . 'setup/parameters.class.inc.php');
 		$this->oMailInboxStandard = new MailInboxStandard();
 		$this->oMailInboxStandard->init();
 
