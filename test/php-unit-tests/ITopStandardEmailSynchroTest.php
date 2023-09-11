@@ -90,7 +90,7 @@ class ITopStandardEmailSynchroTest extends ItopDataTestCase
 		$this->assertEquals($ticketToInsertId, $oTicket->Get('id'));
 	}
 
-    /*public function testGetRelatedTicket_related_title_correspondance(){
+    public function testGetRelatedTicket_related_title_correspondance(){
 
 		$this->oMailInboxStandard->Set('title_pattern', '/R-([0-9]+)/');
 		//
@@ -140,7 +140,7 @@ class ITopStandardEmailSynchroTest extends ItopDataTestCase
         $this->assertEquals($ticketToInsertId, $oTicket->Get('id'));
     }
 
-
+/*
 
     public function testGetRelatedTicket_in_reply_field_update_ticket(){
         $oEmailMessage = new EmailMessage(
