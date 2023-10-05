@@ -532,7 +532,7 @@ EOF
 		$aIgnoredAttachments = array();
 
 		// Insert the remaining attachments so that we know their ID and can reference them in the message's body
-		$aAddedAttachments = $this->AddAttachments($oTicket, $oEmail, true, $aIgnoredAttachments);  // Cannot insert them for real since the Ticket is not saved yet (we don't know its ID)
+		$aAddedAttachments = $this->AddAttachments($oTicket, $oEmail, true, $aIgnoredAttachments, $oCaller, $oUser);  // Cannot insert them for real since the Ticket is not saved yet (we don't know its ID)
 																									// we'll have to call UpdateAttachments once the ticket is properly saved
 		$oTicketDescriptionAttDef = MetaModel::GetAttributeDef(get_class($oTicket), 'description');
 		$bForPlainText = true; // Target format is plain text (by default)
@@ -820,7 +820,7 @@ EOF
 		
 		// Process attachments
 		$aIgnoredAttachments = array();
-		$aAddedAttachments = $this->AddAttachments($oTicket, $oEmail, true, $aIgnoredAttachments);
+		$aAddedAttachments = $this->AddAttachments($oTicket, $oEmail, true, $aIgnoredAttachments, $oCaller, $oUser);
 		
 		$sCaseLogEntry = $this->BuildCaseLogEntry($oEmail, $aAddedAttachments, $aIgnoredAttachments);
 		
