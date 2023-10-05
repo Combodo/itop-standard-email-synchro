@@ -556,9 +556,9 @@ EOF
 		$sTicketDescription = $this->BuildDescription($oEmail, $aAddedAttachments, $aIgnoredAttachments, $bForPlainText);
 
 		$iDescriptionMaxSize = $oTicketDescriptionAttDef->GetMaxSize() - 1000; // Keep some room just in case...
-		if (strlen($sTicketDescription) > $iDescriptionMaxSize)
+	  if (mb_strlen($sTicketDescription) > $iDescriptionMaxSize)
 		{
-      $sMsg = "CreateTicketFromEmail: Truncated description for [{$oTicket->Get('title')}] actual length: ".strlen($sTicketDescription)." maximum: $iDescriptionMaxSize";
+      $sMsg = "CreateTicketFromEmail: Truncated description for [{$oTicket->Get('title')}] actual length: ".mb_strlen($sTicketDescription)." maximum: $iDescriptionMaxSize";
       IssueLog::Error($sMsg);
       $this->Trace($sMsg);
 		  // This has no effect, attachments have already been processed
