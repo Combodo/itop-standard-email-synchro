@@ -5,17 +5,17 @@
 
 SetupWebPage::AddModule(
 	__FILE__, // Path to the current file, all other file names are relative to the directory containing this file
-    'itop-standard-email-synchro/3.4.5',
-    array(
-        // Identification
-        //
-        'label' => 'Ticket Creation from Emails (Standard)',
-        'category' => 'business',
+	'itop-standard-email-synchro/3.4.6-dev',
+	array(
+		// Identification
+		//
+		'label'        => 'Ticket Creation from Emails (Standard)',
+		'category'     => 'business',
 
-        // Setup
-        //
-        'dependencies' => array(
-            'combodo-email-synchro/3.4.2',
+		// Setup
+		//
+		'dependencies' => array(
+			'combodo-email-synchro/3.4.2',
             // no other dependency is listed, for backward 1.x compatibility... though this module uses implicitely the Ticket's derived classes...
         ),
         'mandatory' => false,
