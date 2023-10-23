@@ -63,6 +63,11 @@
           <default_value/>
           <is_null_allowed>true</is_null_allowed>
         </field>
+        <field id="ticket_updates_log_attcode" xsi:type="AttributeString">
+          <sql>ticket_updates_log_attcode</sql>
+          <default_value>public_log</default_value>
+          <is_null_allowed>false</is_null_allowed>
+        </field>
         <field id="title_pattern" xsi:type="AttributeString">
           <sql>title_pattern</sql>
           <default_value/>
@@ -833,7 +838,7 @@ EOF
 		}
 					
 		// Determine which field to update
-		$sAttCode = 'public_log';
+		$sAttCode = $this->Get('ticket_updates_log_attcode');
 		$aAttCodes = MetaModel::GetModuleSetting('itop-standard-email-synchro', 'ticket_log', array('UserRequest' => 'public_log', 'Incident' => 'public_log'));
 		if (array_key_exists(get_class($oTicket), $aAttCodes))
 		{
@@ -1475,6 +1480,9 @@ EOF
                     </item>
                     <item id="ticket_default_title">
                       <rank>60</rank>
+                    </item>
+                    <item id="ticket_updates_log_attcode">
+                      <rank>65</rank>
                     </item>
                     <item id="title_pattern">
                       <rank>70</rank>

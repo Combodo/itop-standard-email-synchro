@@ -36,6 +36,8 @@ Dict::Add('FR FR', 'French', 'Français', array(
 
 	'Class:MailInboxStandard/Attribute:ticket_default_values' => 'Valeurs par défaut du Ticket',
 	'Class:MailInboxStandard/Attribute:ticket_default_title' => 'Titre par défaut (en cas de sujet vide)',
+	'Class:MailInboxStandard/Attribute:ticket_updates_log_attcode' => 'Journal pour nouveaux messages',
+	'Class:MailInboxStandard/Attribute:ticket_updates_log_attcode+' => 'Code de l\'attribut (ex : public_log, private_log, ...) qui sera utilisé pour ajouter les nouveaux messages',
 	'Class:MailInboxStandard/Attribute:title_pattern+' => 'Expression régulière à rechercher dans l\'objet de l\'eMail',
 	'Class:MailInboxStandard/Attribute:title_pattern' => 'Recherche dans l\'objet du mail (RegExp)',
 	'Class:MailInboxStandard/Attribute:title_pattern?' => 'Utilisez la syntaxe PCRE avec les délimiteurs de début et de fin',
