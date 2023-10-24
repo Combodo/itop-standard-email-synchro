@@ -839,7 +839,7 @@ EOF
 					
 		// Determine which field to update
 		$sAttCode = $this->Get('ticket_updates_log_attcode');
-		$aAttCodes = MetaModel::GetModuleSetting('itop-standard-email-synchro', 'ticket_log', array('UserRequest' => 'public_log', 'Incident' => 'public_log'));
+		$aAttCodes = MetaModel::GetModuleSetting('itop-standard-email-synchro', 'ticket_log', []);
 		if (array_key_exists(get_class($oTicket), $aAttCodes))
 		{
 			$sAttCode = $aAttCodes[get_class($oTicket)];
