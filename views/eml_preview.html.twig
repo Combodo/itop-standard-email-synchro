@@ -1,0 +1,5 @@
+<div style="border-bottom: 2px solid #eee;padding-bottom: 0.5rem;"><strong>{{ 'MailInboxStandard:PreviewSubject'|dict_s }}</strong> {{ message.subject }}</div>
+<div>
+{{ message.body|raw }}
+</div>
+<div style="border-top: 2px solid #eee;padding-top: 0.5rem"><a href="{{ message.download_url }}"><span class="fas fa-download"></span> {{ 'MailInboxStandard:DownloadEML'|dict_s }}</a></div>

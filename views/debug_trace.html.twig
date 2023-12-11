@@ -1,0 +1,7 @@
+<div style="padding-top: 0.5rem;">
+{% if message == '' %}
+<pre>{{ trace }}</pre>
+{% else %}
+<p>{{ message|dict_s }}</p>
+{% endif %}
+</div>

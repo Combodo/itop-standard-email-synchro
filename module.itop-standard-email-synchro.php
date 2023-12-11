@@ -24,7 +24,9 @@ SetupWebPage::AddModule(
         // Components
         //
         'datamodel' => array(
-            'model.itop-standard-email-synchro.php',
+        	'model.itop-standard-email-synchro.php',
+        	'src/Hook/ActivityPanelExtension.php',
+        	'vendor/autoload.php',
         ),
         'webservice' => array(),
         'data.struct' => array(),

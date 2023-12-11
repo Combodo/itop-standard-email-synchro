@@ -77,6 +77,13 @@ Dict::Add('FR FR', 'French', 'Français', array(
 	'MailInboxStandard:DebugTrace' => 'Trace de Debug',
 	'MailInboxStandard:DebugTraceNotActive' => 'Activez la trace sur cette boîte mail pour voir le résultat ici.',
 	'MailInbox:NoSubject' => 'Pas de sujet',
+	
+	'MailInboxStandard:ClickToViewSourceEmail' => 'Cliquez pour afficher l\'email source',
+	'MailInboxStandard:ViewSourceEmail' => 'Afficher l\'email source',
+	'MailInboxStandard:EmailNotAvailable' => 'Email source non disponible',
+	'MailInboxStandard:PreviewDlgTitle' => 'Prévisualisation de l\'email source',
+	'MailInboxStandard:PreviewSubject' => 'Objet:',
+	'MailInboxStandard:DownloadEML' => 'Télécharger l\'email (fichier EML)',
 ));
 
 //

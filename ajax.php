@@ -1,5 +1,5 @@
 <?php
-// Copyright (C) 2013 Combodo SARL
+// Copyright (C) 2013-2023 Combodo SARL
 //
 //   This file is part of iTop.
 //
@@ -16,59 +16,21 @@
 //   You should have received a copy of the GNU Affero General Public License
 //   along with iTop. If not, see <http://www.gnu.org/licenses/>
 /**
- * Processing of AJAX calls for the CalendarView
+ * Processing of AJAX calls for the MailInboxes
  *
- * @copyright   Copyright (C) 2013 Combodo SARL
+ * @copyright   Copyright (C) 2013-2023 Combodo SARL
  * @license     http://opensource.org/licenses/AGPL-3.0
  */
 
-require_once('../../approot.inc.php');
-require_once(APPROOT.'/application/application.inc.php');
-require_once(APPROOT.'/application/ajaxwebpage.class.inc.php');
+use Combodo\iTop\Extension\StandardEmailSynchro\Controller\AjaxController;
 
-try
-{
-	require_once(APPROOT.'/application/cmdbabstract.class.inc.php');
-	require_once(APPROOT.'/application/startup.inc.php');
-	
-	require_once(APPROOT.'/application/loginwebpage.class.inc.php');
-	LoginWebPage::DoLogin(false /* bMustBeAdmin */, false /* IsAllowedToPortalUsers */); // Check user rights and prompt if needed
+require_once(APPROOT.'application/startup.inc.php');
 
-	if (version_compare(ITOP_DESIGN_LATEST_VERSION , '3.0') < 0) {
-		$oPage = new ajax_page('');
-	} else {
-		$oPage = new AjaxPage('');
-	}
+require_once(APPROOT.'/application/loginwebpage.class.inc.php');
+LoginWebPage::DoLoginEx(null, false, LoginWebPage::EXIT_HTTP_401); // Check user rights and exits with "401 Not authorized" if not already logged in
+session_write_close();
 
-	$sOperation = utils::ReadParam('operation', '');
-	$iMailInboxId = utils::ReadParam('id', 0, false, 'raw_data');
-	
-	switch($sOperation)
-	{
-		case 'debug_trace':
-		$oInbox = MetaModel::GetObject('MailInboxBase', $iMailInboxId, false);
-		if(is_object($oInbox))
-		{
-			if ($oInbox->Get('trace') == 'yes')
-			{
-				$oPage->add('<pre>'.htmlentities($oInbox->Get('debug_trace'), ENT_QUOTES, 'UTF-8').'</pre>');
-			}
-			else
-			{
-				$oPage->p(Dict::Format('MailInboxStandard:DebugTraceNotActive'));					
-			}
-		}
-		else
-		{
-			$oPage->P(Dict::S('UI:ObjectDoesNotExist'));
-		}
-		break;
-	}
-	$oPage->output();
-}
-catch(Exception $e)
-{	
-	$oPage->SetContentType('text/html');
-	$oPage->add($e->getMessage());
-	$oPage->output();
-}
+$oController = new AjaxController(__DIR__.'/views', 'itop-standard-email-synchro');
+$oController->SetDefaultOperation('DebugTrace');
+
+$oController->HandleOperation();

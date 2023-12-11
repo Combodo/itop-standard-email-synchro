@@ -216,7 +216,7 @@ class ITopStandardEmailSynchroTest extends ItopDataTestCase
 
 		$this->assertEquals('UserRequest', $relatedTicketClass);
 		$this->assertEquals($this->oTicket->GetKey(), $oTicket->Get('id'));
-}
+	}
 
 
 	public function testGetRelatedTicket_closed_related_ticket(){
@@ -341,4 +341,90 @@ class ITopStandardEmailSynchroTest extends ItopDataTestCase
 		$this->assertEquals(null, $oTicket);
 	}
 
+	/**
+	 * @dataProvider ReplyEmailsProvider
+	 */
+	public function testBuildCaseLogEntry($sEmailBody, $sEmailFormat, $sExpectedCaseLog)
+	{
+		$oEmailMessage = new EmailMessage(
+			"UIDL",
+			"messageId",
+			"subject",
+			"xxx.xxx@combodo.com",
+			"xxx",
+			"recipient",
+			[],
+			"1",
+			$sEmailBody,
+			$sEmailFormat,
+			[],
+			null,
+			[
+				"in-reply-to" => "previous-message-id"
+			],
+			"decodeStatus"
+		);
+		
+		$sCaseLogEntry = $this->InvokeNonPublicMethod(MailInboxStandard::class, 'BuildCaseLogEntry', $this->oMailInboxStandard, [$oEmailMessage, [], []]);
+		
+		$this->assertEquals($sExpectedCaseLog, $sCaseLogEntry);
+	}
+	
+	public function ReplyEmailsProvider()
+	{
+		return [
+			'plain_text' => ['Plain Text Message.', 'text/plain', 'Plain Text Message.<a data-role="email-uidl" data-object-id="login_UIDL"></a>'],
+			'simple_html' => ['<p>Html Message.</p>', 'text/html', '<p>Html Message.</p><a data-role="email-uidl" data-object-id="login_UIDL"></a>'],
+			'block_quote' => ['<p>New Message.</p><blockquote>Original Message</blockquote>', 'text/html', '<p>New Message.</p><a data-role="email-uidl" data-object-id="login_UIDL"></a>'],
+			'outlook_message' => [
+<<<HTML
+<html xmlns:v="urn:schemas-microsoft-com:vml" xmlns:o="urn:schemas-microsoft-com:office:office" xmlns:w="urn:schemas-microsoft-com:office:word" xmlns:m="http://schemas.microsoft.com/office/2004/12/omml" xmlns="http://www.w3.org/TR/REC-html40"><head><meta http-equiv=Content-Type content="text/html; charset=utf-8"><meta name=Generator content="Microsoft Word 15 (filtered medium)"><!--[if !mso]><style>v\:* {behavior:url(#default#VML);}
+o\:* {behavior:url(#default#VML);}
+w\:* {behavior:url(#default#VML);}
+.shape {behavior:url(#default#VML);}
+</style><![endif]--><style><!--
+/* Font Definitions */
+@font-face
+	{font-family:"Cambria Math";
+	panose-1:2 4 5 3 5 4 6 3 2 4;}
+@font-face
+	{font-family:Calibri;
+	panose-1:2 15 5 2 2 2 4 3 2 4;}
+@font-face
+	{font-family:"Montserrat Light";
+	panose-1:0 0 4 0 0 0 0 0 0 0;}
+/* Style Definitions */
+p.MsoNormal, li.MsoNormal, div.MsoNormal
+	{margin:0cm;
+	font-size:11.0pt;
+	font-family:"Calibri",sans-serif;
+	mso-ligatures:standardcontextual;
+	mso-fareast-language:EN-US;}
+span.EmailStyle19
+	{mso-style-type:personal-reply;
+	font-family:"Montserrat Light";
+	color:windowtext;}
+.MsoChpDefault
+	{mso-style-type:export-only;
+	font-size:10.0pt;
+	mso-ligatures:none;}
+@page WordSection1
+	{size:612.0pt 792.0pt;
+	margin:70.85pt 70.85pt 70.85pt 70.85pt;}
+div.WordSection1
+	{page:WordSection1;}
+--></style><!--[if gte mso 9]><xml>
+<o:shapedefaults v:ext="edit" spidmax="1026" />
+</xml><![endif]--><!--[if gte mso 9]><xml>
+<o:shapelayout v:ext="edit">
+<o:idmap v:ext="edit" data="1" />
+</o:shapelayout></xml><![endif]--></head><body><div class=WordSection1><p><span>Et là avec une réponse ça fait quoi ?</span></p><p><span>- Denis</span></p><div><div style='border:none;border-top:solid #E1E1E1 1.0pt;padding:3.0pt 0cm 0cm 0cm'><p class=MsoNormal><b><span style='mso-ligatures:none;mso-fareast-language:FR'>De&nbsp;:</span></b><span style='mso-ligatures:none;mso-fareast-language:FR'> Denis Flaven <br><b>Envoyé&nbsp;:</b> mercredi 6 décembre 2023 14:47<br><b>À&nbsp;:</b> 'test@combodo.com' &lt;test@combodo.com&gt;<br><b>Objet&nbsp;:</b> R-000012<o:p></o:p></span></p></div></div><p class=MsoNormal><o:p>&nbsp;</o:p></p><p class=MsoNormal><span style='font-size:10.0pt;font-family:"Montserrat Light"'>Nouveau message, écrit en partant de rien pour mettre à jour le ticket R-000012.<o:p></o:p></span></p><p class=MsoNormal><span style='font-size:10.0pt;font-family:"Montserrat Light"'><o:p>&nbsp;</o:p></span></p><p class=MsoNormal><span style='font-size:10.0pt;font-family:"Montserrat Light"'>Et là je mets une petite image&nbsp;:<o:p></o:p></span></p><p class=MsoNormal><span style='font-size:10.0pt;font-family:"Montserrat Light"'><o:p>&nbsp;</o:p></span></p><p class=MsoNormal><span style='font-size:10.0pt;font-family:"Montserrat Light";mso-ligatures:none'><img width=144 height=179 style='width:1.5in;height:1.8666in' id="Image_x0020_1" src="cid:image001.jpg@01DA2853.A32B2000"></span><span style='font-size:10.0pt;font-family:"Montserrat Light"'><o:p></o:p></span></p><p class=MsoNormal><span style='font-size:10.0pt;font-family:"Montserrat Light"'><o:p>&nbsp;</o:p></span></p><p class=MsoNormal><span style='font-size:10.0pt;font-family:"Montserrat Light"'>- Denis<o:p></o:p></span></p></div></body></html>
+HTML
+		, 'text/html',
+<<<HTML
+<div class="WordSection1"><p><span>Et là avec une réponse ça fait quoi ?</span></p><p><span>- Denis</span></p></div><a data-role="email-uidl" data-object-id="login_UIDL"></a>
+HTML
+			],
+		];
+	}
 }

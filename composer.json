@@ -1,0 +1,16 @@
+{
+  "config": {
+    "classmap-authoritative": true
+  },
+  "autoload": {
+    "psr-4": {
+      "Combodo\\iTop\\Extension\\StandardEmailSynchro\\": "src"
+    }
+  },
+  "name": "combodo/itop-standard-email-synchro",
+  "type": "itop-extension",
+  "description": "Ticket Creation from Emails (Standard)",
+  "require": {
+    "composer-runtime-api": "^2.0"
+  }
+}

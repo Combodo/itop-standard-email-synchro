@@ -167,7 +167,7 @@
 		if (!$bEditMode)
 		{
 			$oPage->SetCurrentTab(Dict::S('MailInboxStandard:DebugTrace'));
-			$sAjaxUrl = addslashes(utils::GetAbsoluteUrlModulesRoot().basename(dirname(__FILE__)).'/ajax.php');
+			$sAjaxUrl = json_encode(utils::GetAbsoluteUrlModulePage('itop-standard-email-synchro', 'ajax.php'));
 			$iId = $this->GetKey();
 			if ($this->Get('trace') == 'yes')
 			{
@@ -177,7 +177,7 @@
 <<<EOF
 $('#debug_trace_refresh').click(function() {
 	$('#debug_trace_output').html('<img src="../images/indicator.gif"/>');
-	$.post('$sAjaxUrl', {operation: 'debug_trace', id: $iId }, function(data) {
+	$.post($sAjaxUrl, {operation: 'DebugTrace', id: $iId }, function(data) {
 		$('#debug_trace_output').html(data);
 	});
 });
@@ -881,6 +881,12 @@ EOF
 	{
 		$sCaseLogEntry = '';
 		$this->Trace("Email body format: ".$oEmail->sBodyFormat);
+
+		// Hidden "tatoo" to keep track of the source of the update
+		// Use a <a> tag with attributes known to pass the HTML sanitizer
+		// Assume that EmailBackgroundProcess::IsMultiSourceMode() is always set to true
+		$sUIDL = $this->GetName().'_'.$oEmail->sUIDL;
+
 		if ($oEmail->sBodyFormat == 'text/html')
 		{
 			$this->Trace("Extracting the new part using GetNewPartHTML...");
@@ -890,6 +896,8 @@ EOF
 				// No new part (only blank tags)... we'd better use the whole text of the message
 				$sCaseLogEntry = $oEmail->sBodyText;
 			}
+			$sCaseLogEntry .= '<a data-role="email-uidl" data-object-id="'.utils::HtmlEntities($sUIDL).'"></a>';
+
 			$this->Trace("Managing inline images...");
 			$sCaseLogEntry = $this->ManageInlineImages($sCaseLogEntry, $aAddedAttachments, $aIgnoredAttachments, false /* $bForPlainText */);
 		}
@@ -898,6 +906,7 @@ EOF
 			$this->Trace("Extracting the new part using GetNewPart...");
 			$sCaseLogEntry = $oEmail->GetNewPart($oEmail->sBodyText, $oEmail->sBodyFormat); // GetNewPart always returns a plain text version of the message
 			$sCaseLogEntry = utils::TextToHtml($sCaseLogEntry);
+			$sCaseLogEntry .= '<a data-role="email-uidl" data-object-id="'.utils::HtmlEntities($sUIDL).'"></a>';
 		}
 		return $sCaseLogEntry;
 	}]]></code>

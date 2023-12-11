@@ -85,6 +85,13 @@ Dict::Add('EN US', 'English', 'English', array(
 	'MailInboxStandard:DebugTrace' => 'Debug Trace',
 	'MailInboxStandard:DebugTraceNotActive' => 'Activate the debug on this Inbox to see the debug trace here.',
 	'MailInbox:NoSubject' => 'No subject',
+	
+	'MailInboxStandard:ClickToViewSourceEmail' => 'Click to display the source email',
+	'MailInboxStandard:ViewSourceEmail' => 'Display source email',
+	'MailInboxStandard:EmailNotAvailable' => 'Source email not available',
+	'MailInboxStandard:PreviewDlgTitle' => 'Preview of the source email',
+	'MailInboxStandard:PreviewSubject' => 'Subject:',
+	'MailInboxStandard:DownloadEML' => 'Download email (EML file)',
 ));
 
 //
