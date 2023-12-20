@@ -71,6 +71,7 @@ Dict::Add('EN US', 'English', 'English', array(
 	'Class:MailInboxStandard/Attribute:caller_default_values' => "New Person's Default Values",
 	'Class:MailInboxStandard/Attribute:debug_log' => 'Debug Log',
 	'Class:MailInboxStandard/Attribute:error_behavior' => 'Behavior in case of error',
+	'Class:MailInboxStandard/Attribute:error_behavior+' => 'For the messages too big (size > \'maximum_email_size\') the behavior is to mark them as error and to keep them in the mailbox',
 	'Class:MailInboxStandard/Attribute:error_behavior/Value:delete' => 'Delete the message from the mailbox',
 	'Class:MailInboxStandard/Attribute:error_behavior/Value:mark_as_error' => 'Keep the message in the mailbox',
 	'Class:MailInboxStandard/Attribute:notify_errors_to' => 'Forward eMails To',
