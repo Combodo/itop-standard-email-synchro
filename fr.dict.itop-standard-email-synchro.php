@@ -63,6 +63,7 @@ Dict::Add('FR FR', 'French', 'Français', array(
 	'Class:MailInboxStandard/Attribute:caller_default_values' => 'Valeurs par défaut pour la nouvelle Personne',
 	'Class:MailInboxStandard/Attribute:debug_log' => 'Traces de Debug',
 	'Class:MailInboxStandard/Attribute:error_behavior' => 'Comportement en cas d\'erreur',
+	'Class:MailInboxStandard/Attribute:error_behavior+' => 'Pour les eMails trop gros (taille > \'maximum_email_size\') le comportement est toujours de les marquer en erreur et de les garder dans la boîte mail',
 	'Class:MailInboxStandard/Attribute:error_behavior/Value:delete' => 'Supprimer l\'eMail de la boîte mail',
 	'Class:MailInboxStandard/Attribute:error_behavior/Value:mark_as_error' => 'Garder l\'eMail dans la boîte mail',
 	'Class:MailInboxStandard/Attribute:notify_errors_to' => 'Faire suivre l\'eMail à',
