@@ -713,7 +713,7 @@ EOF
 			default:
 			$this->Trace('Found '.$oSet->Count().' contacts with the same email address in To/CC "'.$sEmail.'", the first one will be used...');
 			// Multiple contacts with the same email address !!!
-			$oCaller = $oSet->Fetch();
+			$oContact = $oSet->Fetch();
 		}
 		return $oContact;
 	}]]></code>
