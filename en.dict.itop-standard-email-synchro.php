@@ -44,6 +44,8 @@ Dict::Add('EN US', 'English', 'English', array(
 
 	'Class:MailInboxStandard/Attribute:ticket_default_values' => 'Ticket Default Values',
 	'Class:MailInboxStandard/Attribute:ticket_default_title' => 'Default Title (if subject is empty)',
+	'Class:MailInboxStandard/Attribute:ticket_updates_log_attcode' => 'Ticket log for new messages',
+	'Class:MailInboxStandard/Attribute:ticket_updates_log_attcode+' => 'Attribute code of the log (eg. public_log, private_log, ...) in which new messages will be added',
 	'Class:MailInboxStandard/Attribute:title_pattern+' => 'Pattern to match in the subject',
 	'Class:MailInboxStandard/Attribute:title_pattern' => 'Title Pattern',
 	'Class:MailInboxStandard/Attribute:title_pattern?' => 'Use PCRE syntax, including starting and ending delimiters',
