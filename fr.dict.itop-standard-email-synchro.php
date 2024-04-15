@@ -89,7 +89,7 @@ Dict::Add('FR FR', 'French', 'Français', array(
 	'Class:MailInboxStandard/Attribute:target_class/Value:Change+' => '',
 	'Class:MailInboxStandard/Attribute:target_class/Value:RoutineChange' => 'Changement de Routine',
 	'Class:MailInboxStandard/Attribute:target_class/Value:RoutineChange+' => '',
-	'Class:MailInboxStandard/Attribute:target_class/Value:NormalChange' => 'Changement de Routine',
+	'Class:MailInboxStandard/Attribute:target_class/Value:NormalChange' => 'Changement Normal',
 	'Class:MailInboxStandard/Attribute:target_class/Value:NormalChange+' => '',
 	'Class:MailInboxStandard/Attribute:target_class/Value:EmergencyChange' => 'Changement en urgence',
 	'Class:MailInboxStandard/Attribute:target_class/Value:EmergencyChange+' => '',
