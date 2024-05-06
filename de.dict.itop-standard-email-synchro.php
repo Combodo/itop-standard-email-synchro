@@ -1,5 +1,5 @@
 <?php
-// Copyright (C) 2010-2021 Combodo SARL, 2016-18 ITOMIG GmbH
+// Copyright (C) 2010-2024 Combodo SAS, 2016-18 ITOMIG GmbH
 //
 //   This program is free software; you can redistribute it and/or modify
 //   it under the terms of the GNU Lesser General Public License as published by
