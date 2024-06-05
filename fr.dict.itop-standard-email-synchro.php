@@ -34,9 +34,9 @@ Dict::Add('FR FR', 'French', 'Français', array(
 	'Class:MailInboxStandard/Attribute:behavior/Value:create_only' => 'Créer un Ticket',
 	'Class:MailInboxStandard/Attribute:behavior/Value:update_only' => 'Mettre à jour un Ticket existant',
 	'Class:MailInboxStandard/Attribute:behavior/Value:both' => 'Créer ou mettre à jour un Ticket',
-    'Class:MailInboxStandard/Attribute:behavior+' => 'Comportement lorsqu\'un nouveau message arrives dans la boîte mail:
+    'Class:MailInboxStandard/Attribute:behavior+' => 'Comportement lorsqu\'un nouveau message arrive dans la boîte mail:
 - Créer ou mettre à jour un Ticket : met à jour le Ticket correspondant, sinon en crée un nouveau.
-- Créer un Ticket : Crée systèmatiquement un nouveau ticket pour chaque message reçu.
+- Créer un Ticket : Crée systématiquement un nouveau ticket pour chaque message reçu.
 - Mettre à jour un Ticket existant : met à jour le Ticket correspondant, sinon marque le message en erreur.',
 
 	'Class:MailInboxStandard/Attribute:email_storage' => 'Après traitement de l\'eMail',
@@ -66,9 +66,9 @@ Les eMails en erreur ne sont pas concernés par ce choix. Leur traitement dépen
 
 	'Class:MailInboxStandard/Attribute:ticket_default_values' => 'Valeurs par défaut du Ticket',
     'Class:MailInboxStandard/Attribute:ticket_default_values+' => 'Initialiser les champs obligatoires en création du ticket avec des valeurs par défaut.
-Le titre, le demandeur, l\'organisation, la description et l\'origine sont déjà gérés.
-Une ligne par champ, au format format: <code_attribut>:<valeur>
-Pour initialiser des clés externes comme \'org_id\', mettre comme valeur l\'id (ou le nom complet - moins pérenne).
+Les champs title, caller_id, org_id, description et origin sont déjà gérés.
+Une ligne par champ, au format : <code_attribut>:<valeur>
+Pour initialiser des clés externes comme \'org_id\', mettre comme valeur l\'id (ou le nom complet, ce qui est moins pérenne).
 Limitation connue : service_id:Service Médical ⇒ n\'est pas reconnu à cause des accents.',
     'Class:MailInboxStandard/Attribute:ticket_default_values?' => 'Un champ par ligne, au format <code_attribut>:<valeur>',
 
@@ -108,7 +108,7 @@ Ne laissez pas cette option activée trop longtemps dans un environnement de pro
 	'Class:MailInboxStandard/Attribute:import_additional_contacts/Value:only_on_creation' => 'Lors de la création d\'un nouveau Ticket',
 	'Class:MailInboxStandard/Attribute:import_additional_contacts/Value:only_on_update' => 'Lors de la mise à jour d\'un Ticket existant',
 	'Class:MailInboxStandard/Attribute:import_additional_contacts/Value:always' => 'Toujours',
-    'Class:MailInboxStandard/Attribute:import_additional_contacts+' => 'Rechercher les contacts ayant comme email, l\'adresse d\'un destinataire du message, et les lier au Ticket.
+    'Class:MailInboxStandard/Attribute:import_additional_contacts+' => 'Rechercher les contacts ayant comme email l\'adresse d\'un destinataire du message, et les lier au Ticket.
 Les contacts déjà liés sont ignorés. Les adresses mail inconnues sont ignorées.',
 		
 	'Class:MailInboxStandard/Attribute:caller_default_values' => 'Valeurs par défaut pour la nouvelle Personne',
@@ -129,7 +129,8 @@ Un champ par ligne, au format <code_attribut>:<valeur>',
 
 	'Class:MailInboxStandard/Attribute:notify_errors_to' => 'Faire suivre l\'eMail à',
 	'Class:MailInboxStandard/Attribute:notify_errors_to+' => 'L\'adresse mail à laquelle faire suivre les eMails en erreur. 
-Si cette adresse est vide et que les eMails en erreur sont supprimés, alors personne ne sera informé et aucune investigation ne pourra être mené.',
+Les eMails en erreur sont transférés en pièce jointe, sauf s\'ils sont trop gros, auquel cas ils sont copiés dans le répertoire défini par le paramètre de configuration \'big_files_dir\'.
+Si cette adresse est vide et que les eMails en erreur sont supprimés, alors personne ne sera informé et aucune investigation ne pourra être menée.',
 	'Class:MailInboxStandard/Attribute:notify_errors_from' => '(De)',
 	'Class:MailInboxStandard/Attribute:notify_errors_from+' => 'L\'adresse mail à utiliser comme expéditeur des messages faisant suivre les eMails en erreur. 
 Si elle n\'est pas spécifiée, la plupart des serveurs mail détruiront ces messages pour des raisons de sécurité.',

@@ -44,7 +44,7 @@ Dict::Add('EN US', 'English', 'English', array(
 	'Class:MailInboxStandard/Attribute:email_storage/Value:delete' => 'Delete it immediately',
 	'Class:MailInboxStandard/Attribute:email_storage/Value:move' => 'Move it to another folder',
     'Class:MailInboxStandard/Attribute:email_storage+' => 'Select the action to be taken after successfully processing an incoming eMail.
-eMails in error are not in scope of this setting, they are handled using the \'Behavior in case of error\' setting.',
+eMails in error are not in the scope of this setting, they are handled using the field \'Behavior in case of error\'.',
 
 	'Class:MailInboxStandard/Attribute:target_folder' => 'Target folder',
 	'Class:MailInboxStandard/Attribute:target_folder+' => 'Only used to move an email with the IMAP protocol',
@@ -54,11 +54,11 @@ eMails in error are not in scope of this setting, they are handled using the \'B
 	'Class:MailInboxStandard/Attribute:target_class/Value:UserRequest' => 'User Request',
     'Class:MailInboxStandard/Attribute:target_class/Value:Change' => 'Change',
     'Class:MailInboxStandard/Attribute:target_class/Value:Change+' => '',
-    'Class:MailInboxStandard/Attribute:target_class/Value:RoutineChange' => 'RoutineChange',
+    'Class:MailInboxStandard/Attribute:target_class/Value:RoutineChange' => 'Routine Change',
     'Class:MailInboxStandard/Attribute:target_class/Value:RoutineChange+' => '',
-    'Class:MailInboxStandard/Attribute:target_class/Value:NormalChange' => 'NormalChange',
+    'Class:MailInboxStandard/Attribute:target_class/Value:NormalChange' => 'Normal Change',
     'Class:MailInboxStandard/Attribute:target_class/Value:NormalChange+' => '',
-    'Class:MailInboxStandard/Attribute:target_class/Value:EmergencyChange' => 'EmergencyChange',
+    'Class:MailInboxStandard/Attribute:target_class/Value:EmergencyChange' => 'Emergency Change',
     'Class:MailInboxStandard/Attribute:target_class/Value:EmergencyChange+' => '',
     'Class:MailInboxStandard/Attribute:target_class/Value:Problem' => 'Problem',
     'Class:MailInboxStandard/Attribute:target_class/Value:Problem+' => '',
@@ -66,9 +66,9 @@ eMails in error are not in scope of this setting, they are handled using the \'B
 
 	'Class:MailInboxStandard/Attribute:ticket_default_values' => 'Ticket Default Values',
     'Class:MailInboxStandard/Attribute:ticket_default_values+' => "Provide a value for all the mandatory fields at ticket creation.
-Title, caller and description are already managed.
+Fields title, caller_id, org_id, origin and description are already managed.
 One field per line using the format: <field_code>:<value>
-When setting external keys such as 'org_id' use the id (or the friendly name - less robust).",
+When setting external keys such as 'org_id', use the id (or the friendly name which is less robust).",
     'Class:MailInboxStandard/Attribute:ticket_default_values?' => 'One initialization per line, in format <field_code>:<value>',
 
 
@@ -93,14 +93,14 @@ One state/stimulus per line, using format <state_code>:<stimulus_code>',
  - Reject the eMail: flag the eMail in error and reply to the sender with the content of "Unknown senders rejection reply"',
 
     'Class:MailInboxStandard/Attribute:unknown_caller_rejection_reply' => 'Unknown senders rejection reply',
-    'Class:MailInboxStandard/Attribute:unknown_caller_rejection_reply+' => 'Optional reply to sender if we decided to “Reject the eMail” in case of unknown sender.
-Unknown senders are email addresses which does not correspond to any Person in '.ITOP_APPLICATION_SHORT.'.
+    'Class:MailInboxStandard/Attribute:unknown_caller_rejection_reply+' => 'Optional reply to sender used with option “Reject the eMail”.
+Unknown senders are email addresses which do not correspond to any Person in '.ITOP_APPLICATION_SHORT.'.
 If this field is left empty, then no message is sent to unknown senders',
 
 	'Class:MailInboxStandard/Attribute:trace' => 'Debug trace',
 	'Class:MailInboxStandard/Attribute:trace/Value:yes' => 'Yes',
 	'Class:MailInboxStandard/Attribute:trace/Value:no' => 'No',
-    'Class:MailInboxStandard/Attribute:trace+' => '	Use this to track the various operations performed while processing eMails from this inbox.
+    'Class:MailInboxStandard/Attribute:trace+' => '	Use this to track the various operations performed while processing eMails from this Inbox.
 Do not activate this option for long periods on production since it tends to generate a lot of output which slows down the server',
 	
 	'Class:MailInboxStandard/Attribute:import_additional_contacts' => 'Add more contacts (To, CC)',
@@ -128,11 +128,12 @@ Use one field initialization per line, in the format: <field_code>:<value>',
 - eMail format not supported (e.g. encrypted, unknown, etc.),',
 
 	'Class:MailInboxStandard/Attribute:notify_errors_to' => 'Forward eMails To',
-	'Class:MailInboxStandard/Attribute:notify_errors_to+' => 'The email address to which to forward emails in error, as an attachment. 
+	'Class:MailInboxStandard/Attribute:notify_errors_to+' => 'The email address to which to forward emails in error. 
+eMails in error are forwarded as an attachment, unless they are too big, in which case they are moved to a directory specified in the \'big_files_dir\' configuration.
 If this address is left empty and if the emails in error are deleted, then nobody will notice the issue and be able to troubleshoot.',
 	'Class:MailInboxStandard/Attribute:notify_errors_from' => '(From)',
 	'Class:MailInboxStandard/Attribute:notify_errors_from+' => 'The email address to be used as the “sender” of error notifications. 
-For security reasons, many mail servers only relay messages with a define sender address.',
+Required when forwarding the eMails in error, as most mail servers only relay messages with a defined sender address.',
 
 // Fieldsets and Tabs
 
