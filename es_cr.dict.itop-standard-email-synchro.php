@@ -25,7 +25,7 @@ Dict::Add('ES CR', 'Spanish', 'Español, Castellano', array(
 	'Class:MailInboxStandard/Attribute:email_storage' => 'Despues de procesar el correo',
 	'Class:MailInboxStandard/Attribute:email_storage/Value:keep' => 'Mantenerlo en el servidor de correo',
 	'Class:MailInboxStandard/Attribute:email_storage/Value:delete' => 'Borrarlo inmediatamente',
-	'Class:MailInboxStandard/Attribute:email_storage/Value:move' => 'Move to another folder~~',
+	'Class:MailInboxStandard/Attribute:email_storage/Value:move' => 'Move it to another folder~~',
 
 	'Class:MailInboxStandard/Attribute:target_folder' => 'Target folder~~',
 	'Class:MailInboxStandard/Attribute:target_folder+' => 'Only used to move an email with the IMAP protocol~~',
@@ -48,7 +48,7 @@ Dict::Add('ES CR', 'Spanish', 'Español, Castellano', array(
 	'Class:MailInboxStandard/Attribute:unknown_caller_behavior/Value:create_contact' => 'Crear una nueva Persona',
 	'Class:MailInboxStandard/Attribute:unknown_caller_behavior/Value:reject_email' => 'Rechazar el correo',
 
-    'Class:MailInboxStandard/Attribute:unknown_caller_rejection_reply' => 'Unknown Caller rejection reply~~',
+    'Class:MailInboxStandard/Attribute:unknown_caller_rejection_reply' => 'Unknown senders rejection reply~~',
 
 	'Class:MailInboxStandard/Attribute:trace' => 'Traza de Depuración',
 	'Class:MailInboxStandard/Attribute:trace/Value:yes' => 'Si',
@@ -86,11 +86,11 @@ Dict::Add('ES CR', 'Spanish', 'Español, Castellano', array(
 Dict::Add('ES CR', 'Spanish', 'Español, Castellano', array(
 	'Class:MailInboxStandard/Attribute:target_class/Value:Change' => 'Change~~',
 	'Class:MailInboxStandard/Attribute:target_class/Value:Change+' => '~~',
-	'Class:MailInboxStandard/Attribute:target_class/Value:RoutineChange' => 'RoutineChange~~',
+	'Class:MailInboxStandard/Attribute:target_class/Value:RoutineChange' => 'Routine Change~~',
 	'Class:MailInboxStandard/Attribute:target_class/Value:RoutineChange+' => '~~',
-	'Class:MailInboxStandard/Attribute:target_class/Value:NormalChange' => 'NormalChange~~',
+	'Class:MailInboxStandard/Attribute:target_class/Value:NormalChange' => 'Normal Change~~',
 	'Class:MailInboxStandard/Attribute:target_class/Value:NormalChange+' => '~~',
-	'Class:MailInboxStandard/Attribute:target_class/Value:EmergencyChange' => 'EmergencyChange~~',
+	'Class:MailInboxStandard/Attribute:target_class/Value:EmergencyChange' => 'Emergency Change~~',
 	'Class:MailInboxStandard/Attribute:target_class/Value:EmergencyChange+' => '~~',
 	'Class:MailInboxStandard/Attribute:target_class/Value:Problem' => 'Problem~~',
 	'Class:MailInboxStandard/Attribute:target_class/Value:Problem+' => '~~',

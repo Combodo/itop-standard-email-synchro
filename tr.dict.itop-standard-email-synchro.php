@@ -32,7 +32,7 @@ Dict::Add('TR TR', 'Turkish', 'Türkçe', array(
 	'Class:MailInboxStandard/Attribute:email_storage' => 'After processing the eMail~~',
 	'Class:MailInboxStandard/Attribute:email_storage/Value:keep' => 'Keep it on the mail server~~',
 	'Class:MailInboxStandard/Attribute:email_storage/Value:delete' => 'Delete it immediately~~',
-	'Class:MailInboxStandard/Attribute:email_storage/Value:move' => 'Move to another folder~~',
+	'Class:MailInboxStandard/Attribute:email_storage/Value:move' => 'Move it to another folder~~',
 
 	'Class:MailInboxStandard/Attribute:target_folder' => 'Target folder~~',
 	'Class:MailInboxStandard/Attribute:target_folder+' => 'Only used to move an email with the IMAP protocol~~',
@@ -48,14 +48,15 @@ Dict::Add('TR TR', 'Turkish', 'Türkçe', array(
 	'Class:MailInboxStandard/Attribute:title_pattern?' => 'Use PCRE syntax, including starting and ending delimiters~~',
 
 	'Class:MailInboxStandard/Attribute:stimuli' => 'Stimuli to apply~~',
-	'Class:MailInboxStandard/Attribute:stimuli+' => 'Apply a stimulus when the ticket is in a given state~~',
-	'Class:MailInboxStandard/Attribute:stimuli?' => 'Use the format <state_code>:<stimulus_code>~~',
+	'Class:MailInboxStandard/Attribute:stimuli+' => 'Define the stimulus to apply for each ticket state.
+One state/stimulus per line, using format <state_code>:<stimulus_code>~~',
+	'Class:MailInboxStandard/Attribute:stimuli?' => 'One state/stimulus per line, using format <state_code>:<stimulus_code>~~',
 
-	'Class:MailInboxStandard/Attribute:unknown_caller_behavior' => 'Behavior in case of Unknown Caller~~',
+	'Class:MailInboxStandard/Attribute:unknown_caller_behavior' => 'In case of unknown sender~~',
 	'Class:MailInboxStandard/Attribute:unknown_caller_behavior/Value:create_contact' => 'Create a new Person~~',
 	'Class:MailInboxStandard/Attribute:unknown_caller_behavior/Value:reject_email' => 'Reject the eMail~~',
 
-    'Class:MailInboxStandard/Attribute:unknown_caller_rejection_reply' => 'Unknown Caller rejection reply~~',
+    'Class:MailInboxStandard/Attribute:unknown_caller_rejection_reply' => 'Unknown senders rejection reply~~',
 
 	'Class:MailInboxStandard/Attribute:trace' => 'Debug trace~~',
 	'Class:MailInboxStandard/Attribute:trace/Value:yes' => 'Yes~~',
@@ -76,7 +77,7 @@ Dict::Add('TR TR', 'Turkish', 'Türkçe', array(
 	'Class:MailInboxStandard/Attribute:notify_errors_from' => '(From)~~',
 	'MailInbox:Server' => 'Mailbox Configuration~~',
 	'MailInbox:Behavior' => 'Behavior on Incoming eMails~~',
-	'MailInbox:Caller' => 'Unknown Callers~~',
+	'MailInbox:Caller' => 'Unknown Senders~~',
 	'MailInbox:Errors' => 'Emails in Error~~',
 	'MailInbox:OtherContacts' => 'Behavior for Additional Contacts~~',
 	'Menu:MailInboxes' => 'Incoming eMail Inboxes~~',
@@ -93,11 +94,11 @@ Dict::Add('TR TR', 'Turkish', 'Türkçe', array(
 Dict::Add('TR TR', 'Turkish', 'Türkçe', array(
 	'Class:MailInboxStandard/Attribute:target_class/Value:Change' => 'Change~~',
 	'Class:MailInboxStandard/Attribute:target_class/Value:Change+' => '~~',
-	'Class:MailInboxStandard/Attribute:target_class/Value:RoutineChange' => 'RoutineChange~~',
+	'Class:MailInboxStandard/Attribute:target_class/Value:RoutineChange' => 'Routine Change~~',
 	'Class:MailInboxStandard/Attribute:target_class/Value:RoutineChange+' => '~~',
-	'Class:MailInboxStandard/Attribute:target_class/Value:NormalChange' => 'NormalChange~~',
+	'Class:MailInboxStandard/Attribute:target_class/Value:NormalChange' => 'Normal Change~~',
 	'Class:MailInboxStandard/Attribute:target_class/Value:NormalChange+' => '~~',
-	'Class:MailInboxStandard/Attribute:target_class/Value:EmergencyChange' => 'EmergencyChange~~',
+	'Class:MailInboxStandard/Attribute:target_class/Value:EmergencyChange' => 'Emergency Change~~',
 	'Class:MailInboxStandard/Attribute:target_class/Value:EmergencyChange+' => '~~',
 	'Class:MailInboxStandard/Attribute:target_class/Value:Problem' => 'Problem~~',
 	'Class:MailInboxStandard/Attribute:target_class/Value:Problem+' => '~~',
