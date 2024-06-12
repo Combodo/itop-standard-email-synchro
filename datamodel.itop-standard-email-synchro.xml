@@ -427,8 +427,11 @@ EOF
 					if (is_null($oTicket)) {
 						$this->Trace("iTop Simple Email Synchro: WARNING the message ({$oEmail->sUIDL}) got a EmailReplica#{$oEmailReplica->GetKey()}
 						with the ticket_id={$oEmailReplica->Get('ticket_id')} but the ticket does not exist.");
-					} elseif ($oTicket->Get("operational_status") === "closed") {
-						$this->Trace("iTop Simple Email Synchro: WARNING the message ({$oEmail->sUIDL}) is related to the CLOSED ticket {$oTicket->Get('id')}");
+					} elseif (MetaModel::IsValidAttCode(get_class($oTicket), "operational_status") && $oTicket->Get("operational_status") === "closed") {
+						$this->Trace("iTop Simple Email Synchro: WARNING the message ({$oEmail->sUIDL}) is related to the CLOSED (operational_status) ticket {$oTicket->Get('id')}");
+						return null;
+					} elseif (MetaModel::IsValidAttCode(get_class($oTicket), "status") && $oTicket->Get("status") === "closed") {
+						$this->Trace("iTop Simple Email Synchro: WARNING the message ({$oEmail->sUIDL}) is related to the CLOSED (status) ticket {$oTicket->Get('id')}");
 						return null;
 					}
 					else {
