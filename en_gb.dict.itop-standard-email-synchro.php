@@ -30,7 +30,7 @@ Dict::Add('EN GB', 'British English', 'British English', array(
 	'Class:MailInboxStandard' => 'Standard Mail Inbox',
 	'Class:MailInboxStandard+' => 'Source of incoming eMails',
 
-	'Class:MailInboxStandard/Attribute:behavior' => 'Behavior',
+	'Class:MailInboxStandard/Attribute:behavior' => 'Behaviour',
 	'Class:MailInboxStandard/Attribute:behavior/Value:create_only' => 'Create new Tickets',
 	'Class:MailInboxStandard/Attribute:behavior/Value:update_only' => 'Update existing Tickets',
 	'Class:MailInboxStandard/Attribute:behavior/Value:both' => 'Create or Update Tickets',
@@ -69,7 +69,7 @@ eMails in error are not in the scope of this setting, they are handled using the
 Fields title, caller_id, org_id, origin and description are already managed.
 One field per line using the format: <field_code>:<value>
 When setting external keys such as 'org_id', use the id (or the friendly name which is less robust).",
-	'Class:MailInboxStandard/Attribute:ticket_default_values?' => 'One initialization per line, in format <field_code>:<value>',
+	'Class:MailInboxStandard/Attribute:ticket_default_values?' => 'One initialisation per line, in format <field_code>:<value>',
 
 
 	'Class:MailInboxStandard/Attribute:ticket_default_title' => 'Default Title (if subject is empty)',
@@ -119,7 +119,7 @@ Use one field initialization per line, in the format: <field_code>:<value>',
 	'Class:MailInboxStandard/Attribute:debug_trace' => 'Debug trace',
 	'Class:MailInboxStandard/Attribute:debug_trace+' => '',
 
-	'Class:MailInboxStandard/Attribute:error_behavior' => 'Behavior in case of error',
+	'Class:MailInboxStandard/Attribute:error_behavior' => 'Behaviour in case of error',
 	'Class:MailInboxStandard/Attribute:error_behavior/Value:delete' => 'Delete the message from the mailbox',
 	'Class:MailInboxStandard/Attribute:error_behavior/Value:mark_as_error' => 'Keep the message in the mailbox',
 	'Class:MailInboxStandard/Attribute:error_behavior+' => 'Root causes of eMails in error: 
@@ -138,10 +138,10 @@ Required when forwarding the eMails in error, as most mail servers only relay me
 // Fieldsets and Tabs
 
 	'MailInbox:Server' => 'Mailbox Configuration',
-	'MailInbox:Behavior' => 'Behavior on Incoming eMails',
+	'MailInbox:Behavior' => 'Behaviour on Incoming eMails',
 	'MailInbox:Caller' => 'Unknown Senders',
 	'MailInbox:Errors' => 'Emails in Error',
-	'MailInbox:OtherContacts' => 'Behavior for Additional Contacts',
+	'MailInbox:OtherContacts' => 'Behaviour for Additional Contacts',
 	'Menu:MailInboxes' => 'Incoming eMail Inboxes',
 	'Menu:MailInboxes+' => 'Configuration of Inboxes to scan for Incoming eMails',
 	'MailInboxStandard:DebugTrace' => 'Debug Trace',
