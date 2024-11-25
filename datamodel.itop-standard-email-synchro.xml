@@ -1040,20 +1040,25 @@ EOF
 	 * Finalize the processing after the update of the ticket in the database
 	 * @param Ticket $oTicket The ticket being written
 	 * @param EmailMessage $oEmail The source email
-	 * @param Contact $oCaller The caller for this ticket, as passed to UpdateTicket
+	 * @param Contact $oSender The sender of the email, as passed to UpdateTicket
 	 */</comment>
           <static>false</static>
           <access>protected</access>
           <type>Overload-DBObject</type>
-          <code><![CDATA[	protected function AfterUpdateTicket(Ticket $oTicket, EmailMessage $oEmail, Contact $oCaller)
+          <code><![CDATA[	protected function AfterUpdateTicket(Ticket $oTicket, EmailMessage $oEmail, Contact $oSender)
 	{
 		// If there are any TriggerOnMailUpdate defined, let's activate them
 		$aClasses = MetaModel::EnumParentClasses(get_class($oTicket), ENUM_PARENT_CLASSES_ALL);
 		$sClassList = implode(", ", CMDBSource::Quote($aClasses));
 		$oSet = new DBObjectSet(DBObjectSearch::FromOQL("SELECT TriggerOnMailUpdate AS t WHERE t.target_class IN ($sClassList)"));
+
+		$aContext = [
+			'this->object()' => $oTicket,
+			'sender->object()' => $oSender,
+        ];
 		while ($oTrigger = $oSet->Fetch())
 		{
-			$oTrigger->DoActivate($oTicket->ToArgs('this'));
+			$oTrigger->DoActivate($aContext);
 		}
 
 		// Apply a stimulus if needed, will write the ticket to the database, may launch triggers, etc...
