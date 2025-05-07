@@ -677,6 +677,7 @@ EOF
 					$oLnk = new lnkContactToTicket();
 					$oLnk->Set('contact_id', $oContact->GetKey());
 					$oContactsSet->AddItem($oLnk);
+					$aExistingContacts[$oContact->GetKey()] = true;
 				}
 			}
 			else
