@@ -995,7 +995,7 @@ EOF
 						}
 						else
 						{
-							$aAllowedValues = MetaModel::GetAllowedValues_att(get_class($oTicket), $sAttCode, $aArgs);
+							$aAllowedValues = MetaModel::GetAllowedValues_att(get_class($oTicket), $sAttCode, $aArgs) ?? [];
 							if (count($aAllowedValues) == 1)
 							{
 								$aValues = array_keys($aAllowedValues);
