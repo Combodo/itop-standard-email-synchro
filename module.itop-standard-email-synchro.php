@@ -15,7 +15,7 @@ SetupWebPage::AddModule(
 		// Setup
 		//
 		'dependencies' => array(
-			'combodo-email-synchro/3.4.2',
+			'combodo-email-synchro/3.8.2',
             // no other dependency is listed, for backward 1.x compatibility... though this module uses implicitely the Ticket's derived classes...
         ),
         'mandatory' => false,
