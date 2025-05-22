@@ -669,7 +669,7 @@ EOF
 		{
 			$sCallerEmail = $oTicket->Get('caller_id->email');
 			// Exclude the caller from the additional contacts
-			if ($aInfo['email'] != $sCallerEmail && $aInfo['email'] != $this->Get('login'))
+			if ((strcasecmp($aInfo['email'], $sCallerEmail) !== 0) && (strcasecmp($aInfo['email'], $this->Get('login')) !== 0))
 			{
 				$oContact = $this->FindAdditionalContact($aInfo['email']);
 				if (($oContact != null) && !array_key_exists($oContact->GetKey(), $aExistingContacts))
