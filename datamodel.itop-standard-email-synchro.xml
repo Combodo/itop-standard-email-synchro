@@ -954,7 +954,7 @@ EOF
 			$sStimulusCode = $aStateToStimulus[$oTicket->GetState()];
 			$this->Trace('About to apply the stimulus: '.$sStimulusCode.' for the ticket in state: '.$oTicket->GetState());
 
-			// Check that applying the stimulus will not break the data integrity constaints (mandatory, must change)
+			// Check that applying the stimulus will not break the data integrity constraints (mandatory, must change)
 			$aTransitions = $oTicket->EnumTransitions();
 			$bCanApplyStimulus = true;
 			if (!isset($aTransitions[$sStimulusCode]))
