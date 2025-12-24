@@ -627,20 +627,13 @@ EOF
 				$this->Trace("Converting HTML to text using utils::HtmlToText...");
 				$sTicketDescription = utils::HtmlToText($oEmail->sBodyText);
 			}
-		}
-		else
-		{
+		} else {
 			// Original message is in plain text
-			$sTicketDescription = utils::TextToHtml($oEmail->sBodyText);
-			if (!$bForPlainText)
-			{
-				$this->Trace("Converting text to HTML using utils::TextToHtml...");
-				$sTicketDescription = utils::TextToHtml($oEmail->sBodyText);
-			}
+      $this->Trace("Converting text to HTML using utils::TextToHtml...");
+      $sTicketDescription = utils::TextToHtml($oEmail->sBodyText);
 		}
 
-		if (empty($sTicketDescription))
-		{
+		if (empty($sTicketDescription)) {
 			$sTicketDescription = 'No description provided.';
 		}
 		
