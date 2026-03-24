@@ -38,6 +38,14 @@ Dict::Add('EN US', 'English', 'English', array(
 - Create or Update: Update a matching Ticket found, otherwise create. 
 - Create new ticket: Every new message creates a new Ticket.
 - Update existing ticket: Update a matching Ticket found, otherwise flag in error.',
+	'Class:MailInboxStandard/Attribute:behavior_closed_ticket'                     => 'Behavior in case of ticket closed',
+	'Class:MailInboxStandard/Attribute:behavior_closed_ticket+'                    => 'In case of an update, it provides the behavior if the ticket is closed:
+- Put the mail in error: Nothing is done. The mail is in error.
+- Create a new ticket
+- Update existing ticket. In this case, it\'s preferable to configure a "stimulus to apply" to reopen ticket.',
+	'Class:MailInboxStandard/Attribute:behavior_closed_ticket/Value:error'         => 'Put the mail in error',
+	'Class:MailInboxStandard/Attribute:behavior_closed_ticket/Value:new_ticket'    => 'Create a new Ticket',
+	'Class:MailInboxStandard/Attribute:behavior_closed_ticket/Value:update_ticket' => 'Update the Ticket',
 
 	'Class:MailInboxStandard/Attribute:email_storage' => 'After processing the eMail',
 	'Class:MailInboxStandard/Attribute:email_storage/Value:keep' => 'Keep it on the mail server',

@@ -151,6 +151,16 @@
           <default_value/>
           <is_null_allowed>true</is_null_allowed>
         </field>
+        <field id="behavior_closed_ticket" xsi:type="AttributeEnum">
+          <sql>behavior_closed_ticket</sql>
+          <values>
+            <value>error</value>
+            <value>new_ticket</value>
+            <value>update_ticket</value>
+          </values>
+          <default_value>new_ticket</default_value>
+          <is_null_allowed>false</is_null_allowed>
+        </field>
       </fields>
       <methods>
         <method id="DisplayBareRelations">
@@ -428,13 +438,20 @@ EOF
 						$this->Trace("iTop Simple Email Synchro: WARNING the message ({$oEmail->sUIDL}) got a EmailReplica#{$oEmailReplica->GetKey()}
 						with the ticket_id={$oEmailReplica->Get('ticket_id')} but the ticket does not exist.");
 					} elseif (MetaModel::IsValidAttCode(get_class($oTicket), "operational_status") && $oTicket->Get("operational_status") === "closed") {
-						$this->Trace("iTop Simple Email Synchro: WARNING the message ({$oEmail->sUIDL}) is related to the CLOSED (operational_status) ticket {$oTicket->Get('id')}");
-						return null;
+						if ($this->Get('behavior_closed_ticket') === 'new_ticket') {
+                $this->Trace("iTop Simple Email Synchro: WARNING the message ({$oEmail->sUIDL}) is related to the CLOSED (operational_status) ticket {$oTicket->Get('id')}");
+                return null;
+						} else {
+                return $oTicket;
+						}
 					} elseif (MetaModel::IsValidAttCode(get_class($oTicket), "status") && $oTicket->Get("status") === "closed") {
-						$this->Trace("iTop Simple Email Synchro: WARNING the message ({$oEmail->sUIDL}) is related to the CLOSED (status) ticket {$oTicket->Get('id')}");
-						return null;
-					}
-					else {
+	          if ($this->Get('behavior_closed_ticket') === 'new_ticket') {
+                $this->Trace("iTop Simple Email Synchro: WARNING the message ({$oEmail->sUIDL}) is related to the CLOSED (status) ticket {$oTicket->Get('id')}");
+                return null;
+						} else {
+                return $oTicket;
+						}
+					} else {
 					  return $oTicket;
 					}
 				}
@@ -444,22 +461,33 @@ EOF
 			// No associated ticket found by parsing the headers, check
 			// if the subject does not match a specific pattern
 			$sPattern = $this->FixPattern($this->Get('title_pattern'));
-			if(($sPattern != '') && (preg_match($sPattern, $oEmail->sSubject, $aMatches)))
-			{
+			if(($sPattern != '') && (preg_match($sPattern, $oEmail->sSubject, $aMatches))) {
 				$oFilter = DBSearch::FromOQL('SELECT Ticket WHERE ref = :ref');
-				foreach ($aMatches as $sMatch)
-				{
-					if (!empty($sMatch))
-					{
+				foreach ($aMatches as $sMatch) {
+					if (!empty($sMatch)) {
 						$this->Trace("iTop Simple Email Synchro: Retrieving ticket $sMatch (match by subject pattern)...");
 						$oSet = new DBObjectSet($oFilter, array(), array('ref' => $sMatch));
 						$oTicket = $oSet->Fetch();
-						if ($oTicket)
-						{
+						if ($oTicket) {
+              if (MetaModel::IsValidAttCode(get_class($oTicket), "operational_status") && $oTicket->Get("operational_status") === "closed") {
+                if ($this->Get('behavior_closed_ticket') === 'new_ticket') {
+                    $this->Trace("iTop Simple Email Synchro: WARNING the message ({$oEmail->sUIDL}) is related to the CLOSED (operational_status) ticket {$oTicket->Get('id')}");
+                    return null;
+                } else {
+                    return $oTicket;
+                }
+              } elseif (MetaModel::IsValidAttCode(get_class($oTicket), "status") && $oTicket->Get("status") === "closed") {
+                if ($this->Get('behavior_closed_ticket') === 'new_ticket') {
+                    $this->Trace("iTop Simple Email Synchro: WARNING the message ({$oEmail->sUIDL}) is related to the CLOSED (status) ticket {$oTicket->Get('id')}");
+                    return null;
+                } else {
+                    return $oTicket;
+                }
+              }
 							break;
 						}
-				    }
-                }
+				  }
+        }
 			}
 
 		return $oTicket;
@@ -536,7 +564,7 @@ EOF
 
 		// Insert the remaining attachments so that we know their ID and can reference them in the message's body
 		$aAddedAttachments = $this->AddAttachments($oTicket, $oEmail, true, $aIgnoredAttachments, $oCaller, $oUser);  // Cannot insert them for real since the Ticket is not saved yet (we don't know its ID)
-																									// we'll have to call UpdateAttachments once the ticket is properly saved
+		// we'll have to call UpdateAttachments once the ticket is properly saved
 		$oTicketDescriptionAttDef = MetaModel::GetAttributeDef(get_class($oTicket), 'description');
 		$bForPlainText = true; // Target format is plain text (by default)
 		if ($oTicketDescriptionAttDef instanceof AttributeHTML)
@@ -798,6 +826,15 @@ EOF
 			$this->SetNextAction(EmailProcessor::MARK_MESSAGE_AS_ERROR); // Keep the message in the mailbox, but marked as error
 			return;
 		}
+		if($this->Get('behavior_closed_ticket') === 'error'){
+      if (MetaModel::IsValidAttCode(get_class($oTicket), "operational_status") && $oTicket->Get('operational_status') =='closed'){
+          $this->sLastError='Ticket '.$oTicket->GetName().' is closed. Cannot update a closed ticket.';
+          return null;
+      } elseif (MetaModel::IsValidAttCode(get_class($oTicket), "status") && $oTicket->Get("status") === "closed") {
+          $this->sLastError='Ticket '.$oTicket->GetName().' is closed. Cannot update a closed ticket.';
+          return null;
+      }
+    }
 		
 		// Try to extract what's new from the message's body
 		$this->Trace("iTop Simple Email Synchro: Updating the iTop ticket ".$oTicket->GetName()." from eMail '".$oEmail->sSubject."'");
@@ -1462,6 +1499,9 @@ EOF
                   <items>
                     <item id="behavior">
                       <rank>10</rank>
+                    </item>
+                    <item id="behavior_closed_ticket">
+                      <rank>15</rank>
                     </item>
                     <item id="email_storage">
                       <rank>20</rank>

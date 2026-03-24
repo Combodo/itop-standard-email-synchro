@@ -20,6 +20,14 @@ Dict::Add('IT IT', 'Italian', 'Italiano', [
 	'Class:MailInboxStandard/Attribute:behavior/Value:both' => 'Create or Update Tickets~~',
 	'Class:MailInboxStandard/Attribute:behavior/Value:create_only' => 'Create new Tickets~~',
 	'Class:MailInboxStandard/Attribute:behavior/Value:update_only' => 'Update existing Tickets~~',
+	'Class:MailInboxStandard/Attribute:behavior_closed_ticket'                     => 'Behavior in case of ticket closed~~',
+	'Class:MailInboxStandard/Attribute:behavior_closed_ticket+'                    => 'In case of an update, it provides the behavior if the ticket is closed:
+- Put the mail in error: Nothing is done. The mail is in error.
+- Create a new ticket
+- Update existing ticket. In this case, it\'s preferable to configure a "stimulus to apply" to reopen ticket.~~',
+	'Class:MailInboxStandard/Attribute:behavior_closed_ticket/Value:error'         => 'Put the mail in error~~',
+	'Class:MailInboxStandard/Attribute:behavior_closed_ticket/Value:new_ticket'    => 'Create a new Ticket~~',
+	'Class:MailInboxStandard/Attribute:behavior_closed_ticket/Value:update_ticket' => 'Update the Ticket~~',
 	'Class:MailInboxStandard/Attribute:caller_default_values' => 'New Person\'s Default Values~~',
 	'Class:MailInboxStandard/Attribute:caller_default_values+' => 'Provide a value for all mandatory fields of a Person, except email.
 Use one field initialization per line, in the format: <field_code>:<value>~~',

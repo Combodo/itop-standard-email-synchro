@@ -20,6 +20,15 @@ Dict::Add('FR FR', 'French', 'Français', [
 	'Class:MailInboxStandard/Attribute:behavior/Value:both' => 'Créer ou mettre à jour un Ticket',
 	'Class:MailInboxStandard/Attribute:behavior/Value:create_only' => 'Créer un Ticket',
 	'Class:MailInboxStandard/Attribute:behavior/Value:update_only' => 'Mettre à jour un Ticket existant',
+	'Class:MailInboxStandard/Attribute:behavior_closed_ticket'                     => 'Comportement en cas de ticket fermé',
+	'Class:MailInboxStandard/Attribute:behavior_closed_ticket+'                    => 'Si le ticket correspondant à un message reçu est fermé, donne le comportement à adopter :
+- Mettre le message en erreur (ce qui est préférable si les tickets fermés ne sont pas ré-ouvrables),
+- Créer un nouveau ticket,
+- Mettre à jour le ticket fermé. Dans ce cas, il est préférable de configurer un "Stimuli à appliquer" pour réouvrir le ticket.',
+	'Class:MailInboxStandard/Attribute:behavior_closed_ticket/Value:error'         => 'Mettre le mail en errreur',
+	'Class:MailInboxStandard/Attribute:behavior_closed_ticket/Value:new_ticket'    => 'Créer un nouveau Ticket',
+	'Class:MailInboxStandard/Attribute:behavior_closed_ticket/Value:update_ticket' => 'Mettre à jour le Ticket',
+
 	'Class:MailInboxStandard/Attribute:caller_default_values' => 'Valeurs par défaut pour la nouvelle Personne',
 	'Class:MailInboxStandard/Attribute:caller_default_values+' => 'Fournir une valeur pour tous les champs obligatoires de la Personne, sauf l\'email.
 Un champ par ligne, au format <code_attribut>:<valeur>',
