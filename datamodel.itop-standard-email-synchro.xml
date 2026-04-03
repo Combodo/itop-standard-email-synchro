@@ -154,6 +154,7 @@
         <field id="behavior_closed_ticket" xsi:type="AttributeEnum">
           <sql>behavior_closed_ticket</sql>
           <values>
+            <value>error_with_autoreply</value>
             <value>error</value>
             <value>new_ticket</value>
             <value>update_ticket</value>
@@ -826,12 +827,31 @@ EOF
 			$this->SetNextAction(EmailProcessor::MARK_MESSAGE_AS_ERROR); // Keep the message in the mailbox, but marked as error
 			return;
 		}
-		if($this->Get('behavior_closed_ticket') === 'error'){
-      if (MetaModel::IsValidAttCode(get_class($oTicket), "operational_status") && $oTicket->Get('operational_status') =='closed'){
+		if($this->Get('behavior_closed_ticket') === 'error' || $this->Get('behavior_closed_ticket') === 'error_with_autoreply'){
+      if ((MetaModel::IsValidAttCode(get_class($oTicket), "operational_status") && $oTicket->Get('operational_status') =='closed') || (MetaModel::IsValidAttCode(get_class($oTicket), "status") && $oTicket->Get("status") === "closed")) {
           $this->sLastError='Ticket '.$oTicket->GetName().' is closed. Cannot update a closed ticket.';
-          return null;
-      } elseif (MetaModel::IsValidAttCode(get_class($oTicket), "status") && $oTicket->Get("status") === "closed") {
-          $this->sLastError='Ticket '.$oTicket->GetName().' is closed. Cannot update a closed ticket.';
+          if ($this->Get('behavior_closed_ticket') === 'error_with_autoreply') {
+                $oResponseEMail = new EMail();
+                $sNewSubject = Dict::Format('itop-standard-email-synchro:email_subject_error_closed_ticket', $oEmail->sSubject);
+                $sToEmail = $oEmail->sCallerEmail;
+                $oResponseEMail->SetSubject($sNewSubject);
+                $oResponseEMail->SetBody(Dict::S('itop-standard-email-synchro:email_message_error_closed_ticket').$oEmail->sBodyText, $oEmail->sBodyFormat);
+                $oResponseEMail->SetRecipientTO($sToEmail);
+                $oResponseEMail->SetRecipientCC([]);
+                $oResponseEMail->SetRecipientBCC([]);
+                $oResponseEMail->SetRecipientFrom(	MetaModel::GetConfig()->Get('email_default_sender_address'),	MetaModel::GetConfig()->Get('email_default_sender_label'));
+                foreach($oEmail->aReferences as $sReference) {
+                  $oResponseEMail->SetReferences($sReference);
+                }
+
+                $oNew = MetaModel::NewObject('AsyncSendEmail');
+                $oNew->Set('to', $sToEmail);
+                $oNew->Set('subject', $sNewSubject);
+                $oNew->Set('version', 2);
+                $sMessage = $oResponseEMail->SerializeV2();
+                $oNew->Set('message', $sMessage);
+                $oNew->DBInsert();
+         }
           return null;
       }
     }

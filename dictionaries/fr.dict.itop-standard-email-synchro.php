@@ -22,10 +22,12 @@ Dict::Add('FR FR', 'French', 'Français', [
 	'Class:MailInboxStandard/Attribute:behavior/Value:update_only' => 'Mettre à jour un Ticket existant',
 	'Class:MailInboxStandard/Attribute:behavior_closed_ticket'                     => 'Comportement en cas de ticket fermé',
 	'Class:MailInboxStandard/Attribute:behavior_closed_ticket+'                    => 'Si le ticket correspondant à un message reçu est fermé, donne le comportement à adopter :
-- Mettre le message en erreur (ce qui est préférable si les tickets fermés ne sont pas ré-ouvrables),
+- Mettre le message en erreur et envoyer un mail de réponse automatique : Le mail est en erreur, et une réponse automatique est envoyée à l\'expéditeur pour l\'informer que le ticket est fermé et ne peut pas être mis à jour. C\'est la meilleure option si les tickets fermés ne sont pas ré-ouvrables.
+- Mettre le message en erreur sans envoyer de mail de réponse automatique : 
 - Créer un nouveau ticket,
 - Mettre à jour le ticket fermé. Dans ce cas, il est préférable de configurer un "Stimuli à appliquer" pour réouvrir le ticket.',
-	'Class:MailInboxStandard/Attribute:behavior_closed_ticket/Value:error'         => 'Mettre le mail en errreur',
+	'Class:MailInboxStandard/Attribute:behavior_closed_ticket/Value:error_with_autoreply' => 'Mettre le mail en erreur et envoyer un mail de réponse automatique',
+	'Class:MailInboxStandard/Attribute:behavior_closed_ticket/Value:error' => 'Mettre le mail en erreur sans envoyer de mail de réponse automatique',
 	'Class:MailInboxStandard/Attribute:behavior_closed_ticket/Value:new_ticket'    => 'Créer un nouveau Ticket',
 	'Class:MailInboxStandard/Attribute:behavior_closed_ticket/Value:update_ticket' => 'Mettre à jour le Ticket',
 
@@ -120,4 +122,7 @@ Si ce champ est laissé vide, alors aucune réponse ne leur est envoyée.',
 	'MailInboxStandard:DebugTraceNotActive' => 'Activez la trace sur cette boîte mail pour voir le résultat ici.',
 	'Menu:MailInboxes' => 'Gestion des Boîtes Mail',
 	'Menu:MailInboxes+' => 'Configuration des Boîtes Mails à scanner',
+
+	'itop-standard-email-synchro:email_subject_error_closed_ticket' => 'Erreur : ticket fermé pour l\'email % 1$s',
+	'itop-standard-email-synchro:email_message_error_closed_ticket' => 'Cet email correspond à un ticket clos.Veuillez envoyer un nouveau message pour créer un nouveau ticket ou demander à l\'équipe support de le réouvrir pour pouvoir le mettre à jour.',
 ]);

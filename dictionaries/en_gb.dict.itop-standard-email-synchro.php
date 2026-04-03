@@ -40,10 +40,12 @@ Dict::Add('EN GB', 'British English', 'British English', array(
 - Update existing ticket: Update a matching Ticket found, otherwise flag in error.',
 	'Class:MailInboxStandard/Attribute:behavior_closed_ticket'                     => 'Behavior in case of ticket closed~~',
 	'Class:MailInboxStandard/Attribute:behavior_closed_ticket+'                    => 'In case of an update, it provides the behavior if the ticket is closed:
-- Put the mail in error: Nothing is done. The mail is in error.
+- Put the mail in error and send an autoreply: Nothing is done. The mail is in error. An autoreply is sent to the sender with the content of "Closed tickets auto-reply". This is the recommended option to inform users that their update has not been processed because the ticket is closed.
+- Put the mail in error: Nothing is done. The mail is in error. without sending any autoreply to the sender.
 - Create a new ticket
 - Update existing ticket. In this case, it\'s preferable to configure a "stimulus to apply" to reopen ticket.~~',
-	'Class:MailInboxStandard/Attribute:behavior_closed_ticket/Value:error'         => 'Put the mail in error~~',
+	'Class:MailInboxStandard/Attribute:behavior_closed_ticket/Value:error_with_autoreply' => 'Put the mail in error and send an auto-reply to the sender~~',
+	'Class:MailInboxStandard/Attribute:behavior_closed_ticket/Value:error' => 'Put the mail in error without autoreply~~',
 	'Class:MailInboxStandard/Attribute:behavior_closed_ticket/Value:new_ticket'    => 'Create a new Ticket~~',
 	'Class:MailInboxStandard/Attribute:behavior_closed_ticket/Value:update_ticket' => 'Update the Ticket~~',
 
@@ -155,4 +157,7 @@ Required when forwarding the eMails in error, as most mail servers only relay me
 	'MailInboxStandard:DebugTrace' => 'Debug Trace',
 	'MailInboxStandard:DebugTraceNotActive' => 'Activate the debug on this Inbox to see the debug trace here.',
 	'MailInbox:NoSubject' => 'No subject',
+
+	'itop-standard-email-synchro:email_subject_error_closed_ticket' => 'Error: closed ticket for email %1$s~~',
+	'itop-standard-email-synchro:email_message_error_closed_ticket' => 'This eMail was received for a ticket which is closed. Please send a new eMail to create a new ticket or ask the support team to reopen the ticket if you want to update it.~~',
 ));
