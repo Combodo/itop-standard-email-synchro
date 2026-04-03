@@ -21,7 +21,7 @@ Dict::Add('RU RU', 'Russian', 'Русский', [
 	'Class:MailInboxStandard/Attribute:behavior/Value:both' => 'Создать или обновить тикет',
 	'Class:MailInboxStandard/Attribute:behavior/Value:create_only' => 'Создать новый тикет',
 	'Class:MailInboxStandard/Attribute:behavior/Value:update_only' => 'Обновить существующий тикета',
-	'Class:MailInboxStandard/Attribute:behavior_closed_ticket'                     => 'Behavior in case of ticket closed~~',
+	'Class:MailInboxStandard/Attribute:behavior_closed_ticket' => 'Behavior in case of closed ticket~~',
 	'Class:MailInboxStandard/Attribute:behavior_closed_ticket+'                    => 'In case of an update, it provides the behavior if the ticket is closed:
 - Put the mail in error and send an autoreply: Nothing is done. The mail is in error. An autoreply is sent to the sender with the content of "Closed tickets auto-reply". This is the recommended option to inform users that their update has not been processed because the ticket is closed.
 - Put the mail in error: Nothing is done. The mail is in error. without sending any autoreply to the sender.
