@@ -21,16 +21,21 @@ Dict::Add('RU RU', 'Russian', 'Русский', [
 	'Class:MailInboxStandard/Attribute:behavior/Value:both' => 'Создать или обновить тикет',
 	'Class:MailInboxStandard/Attribute:behavior/Value:create_only' => 'Создать новый тикет',
 	'Class:MailInboxStandard/Attribute:behavior/Value:update_only' => 'Обновить существующий тикета',
-	'Class:MailInboxStandard/Attribute:behavior_closed_ticket' => 'Behavior in case of closed ticket~~',
-	'Class:MailInboxStandard/Attribute:behavior_closed_ticket+'                    => 'In case of an update, it provides the behavior if the ticket is closed:
-- Put the mail in error and send an autoreply: Nothing is done. The mail is in error. An autoreply is sent to the sender with the content of "Closed tickets auto-reply". This is the recommended option to inform users that their update has not been processed because the ticket is closed.
-- Put the mail in error: Nothing is done. The mail is in error. without sending any autoreply to the sender.
+	'Class:MailInboxStandard/Attribute:closed_ticket_behavior'                     => 'Behavior in case of closed ticket~~',
+	'Class:MailInboxStandard/Attribute:closed_ticket_behavior+'                    => 'In case of an update, it provides the behavior if the ticket is closed:
+- Mark the mail as in error
+- Mark the mail as processed, without updating the closed ticket
 - Create a new ticket
 - Update existing ticket. In this case, it\'s preferable to configure a "stimulus to apply" to reopen ticket.~~',
-	'Class:MailInboxStandard/Attribute:behavior_closed_ticket/Value:error_with_autoreply' => 'Put the mail in error and send an auto-reply to the sender~~',
-	'Class:MailInboxStandard/Attribute:behavior_closed_ticket/Value:error' => 'Put the mail in error without autoreply~~',
-	'Class:MailInboxStandard/Attribute:behavior_closed_ticket/Value:new_ticket'    => 'Create a new Ticket~~',
-	'Class:MailInboxStandard/Attribute:behavior_closed_ticket/Value:update_ticket' => 'Update the Ticket~~',
+	'Class:MailInboxStandard/Attribute:closed_ticket_behavior/Value:error'         => 'Mark the mail as in error~~',
+	'Class:MailInboxStandard/Attribute:closed_ticket_behavior/Value:process'       => 'Mark the mail as processed~~',
+	'Class:MailInboxStandard/Attribute:closed_ticket_behavior/Value:new_ticket'    => 'Create a new Ticket~~',
+	'Class:MailInboxStandard/Attribute:closed_ticket_behavior/Value:update_ticket' => 'Update the Ticket~~',
+
+	'Class:MailInboxStandard/Attribute:closed_ticket_reply_subject'             => 'Closed ticket autoreply subject~~',
+	'Class:MailInboxStandard/Attribute:closed_ticket_reply_subject+'            => 'If no subject is provided, then the default subject will be: "Re:$subject$"
+You can use the following placeholders : $subject$, $senderName$, $senderFirstName$ and $senderEmail$ in the email subject.~~',
+
 	'Class:MailInboxStandard/Attribute:caller_default_values' => 'Значения по умолчанию для новой Персоны',
 	'Class:MailInboxStandard/Attribute:caller_default_values+' => 'Provide a value for all mandatory fields of a Person, except email.
 Use one field initialization per line, in the format: <field_code>:<value>~~',
@@ -107,10 +112,15 @@ Do not activate this option for long periods on production since it tends to gen
  - Reject the eMail: flag the eMail in error and reply to the sender with the content of "Unknown senders rejection reply"~~',
 	'Class:MailInboxStandard/Attribute:unknown_caller_behavior/Value:create_contact' => 'Создать новую Персону',
 	'Class:MailInboxStandard/Attribute:unknown_caller_behavior/Value:reject_email' => 'Отклонить сообщение',
-	'Class:MailInboxStandard/Attribute:unknown_caller_rejection_reply' => 'Unknown senders rejection reply~~',
+	'Class:MailInboxStandard/Attribute:unknown_caller_rejection_reply_subject'  => 'Unknown senders autoreply subject',
+	'Class:MailInboxStandard/Attribute:unknown_caller_rejection_reply_subject+' => 'If no subject is provided, then the default subject will be: "[iTop]$subject$ - Unknown caller ($senderEmail$)"
+You can use the following placeholders : $subject$ and $senderEmail$ in the email subject.',
+
+	'Class:MailInboxStandard/Attribute:unknown_caller_rejection_reply'  => 'Unknown senders rejection reply message',
 	'Class:MailInboxStandard/Attribute:unknown_caller_rejection_reply+' => 'Optional reply to sender used with option “Reject the eMail”.
 Unknown senders are email addresses which do not correspond to any Person in '.ITOP_APPLICATION_SHORT.'.
-If this field is left empty, then no message is sent to unknown senders~~',
+If this field is left empty, then no message is sent to unknown senders
+You can use the following placeholders : $subject$ and $senderEmail$ in the message.~~',
 	'MailInbox:Behavior' => 'При входящем сообщении',
 	'MailInbox:Caller' => 'Неизвестный отправитель',
 	'MailInbox:Errors' => 'Сообщение с ошибкой',
@@ -121,7 +131,4 @@ If this field is left empty, then no message is sent to unknown senders~~',
 	'MailInboxStandard:DebugTraceNotActive' => 'Включите отладку в настройках почтового ящика, чтобы увидеть трассировки.',
 	'Menu:MailInboxes' => 'Входящая почта',
 	'Menu:MailInboxes+' => 'Настройка почтовых ящиков для входящих сообщений электронной почты',
-
-	'itop-standard-email-synchro:email_subject_error_closed_ticket' => 'Error: closed ticket for email %1$s~~',
-	'itop-standard-email-synchro:email_message_error_closed_ticket' => 'This eMail was received for a ticket which is closed. Please send a new eMail to create a new ticket or ask the support team to reopen the ticket if you want to update it.~~',
 ]);

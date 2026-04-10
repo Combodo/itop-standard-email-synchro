@@ -82,6 +82,11 @@
           <default_value/>
           <is_null_allowed>true</is_null_allowed>
         </field>
+        <field id="unknown_caller_rejection_reply_subject" xsi:type="AttributeString">
+          <sql>unknown_caller_rejection_reply_subject</sql>
+          <default_value/>
+          <is_null_allowed>true</is_null_allowed>
+        </field>
         <field id="caller_default_values" xsi:type="AttributeText">
           <sql>caller_default_values</sql>
           <default_value/>
@@ -151,16 +156,26 @@
           <default_value/>
           <is_null_allowed>true</is_null_allowed>
         </field>
-        <field id="behavior_closed_ticket" xsi:type="AttributeEnum">
-          <sql>behavior_closed_ticket</sql>
+        <field id="closed_ticket_behavior" xsi:type="AttributeEnum">
+          <sql>closed_ticket_behavior</sql>
           <values>
-            <value>error_with_autoreply</value>
             <value>error</value>
+            <value>process</value>
             <value>new_ticket</value>
             <value>update_ticket</value>
           </values>
           <default_value>new_ticket</default_value>
           <is_null_allowed>false</is_null_allowed>
+        </field>
+        <field id="closed_ticket_reply_subject" xsi:type="AttributeString">
+          <sql>closed_ticket_reply_subject</sql>
+          <default_value/>
+          <is_null_allowed>true</is_null_allowed>
+        </field>
+        <field id="closed_ticket_reply" xsi:type="AttributeText">
+          <sql>closed_ticket_reply</sql>
+          <default_value/>
+          <is_null_allowed>true</is_null_allowed>
         </field>
       </fields>
       <methods>
@@ -262,7 +277,7 @@ EOF
           <type>Overload-DBObject</type>
           <code><![CDATA[	public function ProcessNewEmail(EmailSource $oSource, $index, EmailMessage $oEmail)
 	{
-	    $this->sLastError = null;
+	   $this->sLastError = null;
 		$this->Trace("Processing new eMail (index = $index)");
 		$oTicket = null;
 		if ($this->IsUndesired($oEmail))
@@ -438,22 +453,8 @@ EOF
 					if (is_null($oTicket)) {
 						$this->Trace("iTop Simple Email Synchro: WARNING the message ({$oEmail->sUIDL}) got a EmailReplica#{$oEmailReplica->GetKey()}
 						with the ticket_id={$oEmailReplica->Get('ticket_id')} but the ticket does not exist.");
-					} elseif (MetaModel::IsValidAttCode(get_class($oTicket), "operational_status") && $oTicket->Get("operational_status") === "closed") {
-						if ($this->Get('behavior_closed_ticket') === 'new_ticket') {
-                $this->Trace("iTop Simple Email Synchro: WARNING the message ({$oEmail->sUIDL}) is related to the CLOSED (operational_status) ticket {$oTicket->Get('id')}");
-                return null;
-						} else {
-                return $oTicket;
-						}
-					} elseif (MetaModel::IsValidAttCode(get_class($oTicket), "status") && $oTicket->Get("status") === "closed") {
-	          if ($this->Get('behavior_closed_ticket') === 'new_ticket') {
-                $this->Trace("iTop Simple Email Synchro: WARNING the message ({$oEmail->sUIDL}) is related to the CLOSED (status) ticket {$oTicket->Get('id')}");
-                return null;
-						} else {
-                return $oTicket;
-						}
 					} else {
-					  return $oTicket;
+					   return $this->CheckTicketStatus($oTicket);
 					}
 				}
 			}
@@ -470,27 +471,66 @@ EOF
 						$oSet = new DBObjectSet($oFilter, array(), array('ref' => $sMatch));
 						$oTicket = $oSet->Fetch();
 						if ($oTicket) {
-              if (MetaModel::IsValidAttCode(get_class($oTicket), "operational_status") && $oTicket->Get("operational_status") === "closed") {
-                if ($this->Get('behavior_closed_ticket') === 'new_ticket') {
-                    $this->Trace("iTop Simple Email Synchro: WARNING the message ({$oEmail->sUIDL}) is related to the CLOSED (operational_status) ticket {$oTicket->Get('id')}");
-                    return null;
-                } else {
-                    return $oTicket;
-                }
-              } elseif (MetaModel::IsValidAttCode(get_class($oTicket), "status") && $oTicket->Get("status") === "closed") {
-                if ($this->Get('behavior_closed_ticket') === 'new_ticket') {
-                    $this->Trace("iTop Simple Email Synchro: WARNING the message ({$oEmail->sUIDL}) is related to the CLOSED (status) ticket {$oTicket->Get('id')}");
-                    return null;
-                } else {
-                    return $oTicket;
-                }
-              }
-							break;
+               return $this->CheckTicketStatus($oTicket,$oEmail);
 						}
 				  }
         }
 			}
 
+		return $oTicket;
+	}]]></code>
+        </method>
+        <method id="CheckTicketStatus">
+          <comment><![CDATA[/**
+	 * Check id ticket is closed and apply the appropriate behavior
+	 * @param $oTicket
+	 * @return string
+	 */]]></comment>
+          <static>false</static>
+          <access>protected</access>
+          <type>Overload-DBObject</type>
+          <code><![CDATA[	protected function CheckTicketStatus($oTicket, $oEmail)
+	{
+		if ((MetaModel::IsValidAttCode(get_class($oTicket), "operational_status") && $oTicket->Get("operational_status") === "closed") ||
+		    (MetaModel::IsValidAttCode(get_class($oTicket), "status") && $oTicket->Get("status") === "closed")) {
+          //send mail if configured to do so
+        $sReplyBody = $this->Get('closed_ticket_reply');
+        $sReplySubject = $this->Get('closed_ticket_reply_subject');
+        if (utils::IsNotNullOrEmptyString($sReplyBody)|| utils::IsNotNullOrEmptyString($sReplySubject) ) {
+            $sContactQuery = 'SELECT Person WHERE email = :email';
+            $oSet = new DBObjectSet(DBObjectSearch::FromOQL($sContactQuery), array(), array('email' => $oEmail->sCallerEmail));
+            $oPerson = $oSet->Fetch();
+            $aPlaceholders = [
+                '$subject$',
+                '$senderEmail$',
+                '$senderName$',
+                '$senderFirstName$'
+            ];
+            $aReplacement = [
+                $oEmail->sSubject,
+                $oEmail->sCallerEmail,
+                $oPerson->Get('name'),
+                $oPerson->Get('first_name'),
+            ];
+            //replace the only autorized placeholder $subject$
+            if (utils::IsNullOrEmptyString($sReplySubject)){
+                  $sReplySubject = 'Re: '.$oEmail->sSubject;
+            } else {
+                  $sReplySubject = str_replace($aPlaceholders,$aReplacement, $sReplySubject);
+            }
+            $sReplyBody = str_replace($aPlaceholders, $aReplacement, $sReplyBody);
+            $sReplyBody = str_replace("\n", "<br/>", $sReplyBody);
+            $sReplyTo = $oEmail->sCallerEmail;
+            $sReplyFrom = $oEmail->aTos[0]['email'];
+            $this->Trace("From: ".$sReplyFrom."\nTo: ".$sReplyTo."\n".$sReplySubject."\n\n".$sReplyBody);
+            $oEmail->oRawEmail->SendAsAttachment($sReplyTo, $sReplyFrom, $sReplySubject, $sReplyBody);
+        }
+
+		    if ($this->Get('closed_ticket_behavior') === 'new_ticket') {
+                $this->Trace("iTop Simple Email Synchro: WARNING the message ({$oEmail->sUIDL}) is related to the CLOSED (operational_status) ticket {$oTicket->Get('id')}");
+                return null;
+				}
+		}
 		return $oTicket;
 	}]]></code>
         </method>
@@ -827,32 +867,29 @@ EOF
 			$this->SetNextAction(EmailProcessor::MARK_MESSAGE_AS_ERROR); // Keep the message in the mailbox, but marked as error
 			return;
 		}
-		if($this->Get('behavior_closed_ticket') === 'error' || $this->Get('behavior_closed_ticket') === 'error_with_autoreply'){
+		if($this->Get('closed_ticket_behavior') === 'error'){
       if ((MetaModel::IsValidAttCode(get_class($oTicket), "operational_status") && $oTicket->Get('operational_status') =='closed') || (MetaModel::IsValidAttCode(get_class($oTicket), "status") && $oTicket->Get("status") === "closed")) {
-          $this->sLastError='Ticket '.$oTicket->GetName().' is closed. Cannot update a closed ticket.';
-          if ($this->Get('behavior_closed_ticket') === 'error_with_autoreply') {
-                $oResponseEMail = new EMail();
-                $sNewSubject = Dict::Format('itop-standard-email-synchro:email_subject_error_closed_ticket', $oEmail->sSubject);
-                $sToEmail = $oEmail->sCallerEmail;
-                $oResponseEMail->SetSubject($sNewSubject);
-                $oResponseEMail->SetBody(Dict::S('itop-standard-email-synchro:email_message_error_closed_ticket').$oEmail->sBodyText, $oEmail->sBodyFormat);
-                $oResponseEMail->SetRecipientTO($sToEmail);
-                $oResponseEMail->SetRecipientCC([]);
-                $oResponseEMail->SetRecipientBCC([]);
-                $oResponseEMail->SetRecipientFrom(	MetaModel::GetConfig()->Get('email_default_sender_address'),	MetaModel::GetConfig()->Get('email_default_sender_label'));
-                foreach($oEmail->aReferences as $sReference) {
-                  $oResponseEMail->SetReferences($sReference);
-                }
-
-                $oNew = MetaModel::NewObject('AsyncSendEmail');
-                $oNew->Set('to', $sToEmail);
-                $oNew->Set('subject', $sNewSubject);
-                $oNew->Set('version', 2);
-                $sMessage = $oResponseEMail->SerializeV2();
-                $oNew->Set('message', $sMessage);
-                $oNew->DBInsert();
-         }
+            $this->sLastError='Ticket '.$oTicket->GetName().' is closed. Cannot update a closed ticket.';
           return null;
+      }
+    }
+		if($this->Get('closed_ticket_behavior') === 'process'){
+      if ((MetaModel::IsValidAttCode(get_class($oTicket), "operational_status") && $oTicket->Get('operational_status') =='closed') || (MetaModel::IsValidAttCode(get_class($oTicket), "status") && $oTicket->Get("status") === "closed")) {
+           $this->Trace("iTop Simple Email Synchro: WARNING the message ({$oEmail->sUIDL}) is related to the CLOSED (operational_status) ticket {$oTicket->Get('id')}");
+          // process the mail as usual but do not update the ticket
+          if ($this->Get('email_storage') == 'delete')	{
+            // Remove the processed message from the mailbox
+            $this->Trace("Ticket updated, deleting the source eMail '".$oEmail->sSubject."'");
+            $this->SetNextAction(EmailProcessor::DELETE_MESSAGE);
+          } else	if ($this->Get('email_storage') == 'move')	{
+            // Remove the processed message from the mailbox
+            $this->Trace("Ticket created, move the source eMail '".$oEmail->sSubject."'");
+            $this->SetNextAction(EmailProcessor::MOVE_MESSAGE);
+          } else {
+            // Keep the message in the mailbox
+            $this->SetNextAction(EmailProcessor::NO_ACTION);
+          }
+          return $oTicket;
       }
     }
 		
@@ -1261,6 +1298,7 @@ EOF
           <type>Overload-DBObject</type>
           <code><![CDATA[	public function HandleError($oEmail, $sErrorCode, $oRawEmail = null, $sAdditionalErrorMessage = '')
 	{
+	  $this->Trace(json_encode(\MyHelpers::get_callstack(1)));
 		$sTo = $this->Get('notify_errors_to');
 		$sFrom = $this->Get('notify_errors_from');
 		// The behavior is overriden in case of undesired_message
@@ -1283,15 +1321,29 @@ EOF
 
 			// if rejection reply
 			$sRejectionReply = $this->Get('unknown_caller_rejection_reply');
-			if (!empty($sRejectionReply) && $oRawEmail)
+			$sRejectionReplySubject = $this->Get('unknown_caller_rejection_reply_subject');
+			if ((utils::IsNotNullOrEmptyString($sRejectionReply) || utils::IsNotNullOrEmptyString($sRejectionReplySubject)) && $oRawEmail)
 			{
-			    $sReplySubject = '[iTop] '.$oEmail->sSubject.' - '.$this->sLastError;
+			 $aPlaceholders = [
+                '$subject$',
+                '$senderEmail$'
+            ];
+            $aReplacement = [
+                $oEmail->sSubject,
+                $oEmail->sCallerEmail
+            ];
+	        if (utils::IsNullOrEmptyString($sRejectionReplySubject)){
+	              $sRejectionReplySubject =  '[iTop] '.$oEmail->sSubject.' - '.$this->sLastError;
+	        } else {
+			          $sRejectionReplySubject = str_replace($aPlaceholders, $aReplacement, $sRejectionReplySubject);
+			    }
+			    $sRejectionReply = str_replace($aPlaceholders, $aReplacement, $sRejectionReply);
 			    $sReplyBody = str_replace("\n", "<br/>", $sRejectionReply);
 			    $sReplyTo = $oEmail->sCallerEmail;
 			    $aTo = $oRawEmail->GetTo();
 			    $sReplyFrom = $aTo[0]['email'];
-			    $this->Trace("From: ".$sReplyFrom."\nTo: ".$sReplyTo."\n".$sReplySubject."\n\n".$sReplyBody);
-			    $oRawEmail->SendAsAttachment($sReplyTo, $sReplyFrom, $sReplySubject, $sReplyBody);
+			    $this->Trace("From: ".$sReplyFrom."\nTo: ".$sReplyTo."\n".$sRejectionReplySubject."\n\n".$sReplyBody);
+			    $oRawEmail->SendAsAttachment($sReplyTo, $sReplyFrom, $sRejectionReplySubject, $sReplyBody);
 
 			    $this->sLastError .= " - Replied to sender on ".date('r');
 			}
@@ -1520,15 +1572,17 @@ EOF
                     <item id="behavior">
                       <rank>10</rank>
                     </item>
-                    <item id="behavior_closed_ticket">
-                      <rank>15</rank>
-                    </item>
                     <item id="email_storage">
                       <rank>20</rank>
                     </item>
                     <item id="target_folder">
                       <rank>30</rank>
                     </item>
+                  </items>
+                </item>
+                <item id="fieldset:MailInbox:TicketProcessing">
+                  <rank>20</rank>
+                  <items>
                     <item id="target_class">
                       <rank>40</rank>
                     </item>
@@ -1546,11 +1600,32 @@ EOF
                     </item>
                   </items>
                 </item>
+                <item id="fieldset:MailInbox:ClosedTickets">
+                  <rank>30</rank>
+                  <items>
+                    <item id="closed_ticket_behavior">
+                      <rank>40</rank>
+                    </item>
+                    <item id="closed_ticket_reply_subject">
+                      <rank>50</rank>
+                    </item>
+                    <item id="closed_ticket_reply">
+                      <rank>60</rank>
+                    </item>
+                  </items>
+                </item>
+              </items>
+            </item>
+            <item id="col:col2">
+              <items>
                 <item id="fieldset:MailInbox:Caller">
-                  <rank>20</rank>
+                  <rank>10</rank>
                   <items>
                     <item id="unknown_caller_behavior">
                       <rank>10</rank>
+                    </item>
+                    <item id="unknown_caller_rejection_reply_subject">
+                      <rank>14</rank>
                     </item>
                     <item id="unknown_caller_rejection_reply">
                       <rank>15</rank>
