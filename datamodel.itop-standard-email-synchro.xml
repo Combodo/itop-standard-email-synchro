@@ -794,7 +794,9 @@ EOF
 		// Check that the ticket is of the expected class
 		if (!is_a($oTicket, $this->Get('target_class')))
 		{
-			$this->Trace("iTop Simple Email Synchro: Error: the incoming email refers to the ticket ".$oTicket->GetName()." of class ".get_class($oTicket).", but this mailbox is configured to process only tickets of class ".$this->Get('target_class'));
+			$sError = "iTop Simple Email Synchro: Error: the incoming email refers to the ticket ".$oTicket->GetName()." of class ".get_class($oTicket).", but this mailbox is configured to process only tickets of class ".$this->Get('target_class');
+			$this->sLastError = $sError;
+			$this->Trace($sError);
 			$this->SetNextAction(EmailProcessor::MARK_MESSAGE_AS_ERROR); // Keep the message in the mailbox, but marked as error
 			return;
 		}
