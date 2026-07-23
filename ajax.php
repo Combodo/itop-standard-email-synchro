@@ -1,9 +1,10 @@
 <?php
+
 // Copyright (C) 2013 Combodo SARL
 //
 //   This file is part of iTop.
 //
-//   iTop is free software; you can redistribute it and/or modify	
+//   iTop is free software; you can redistribute it and/or modify
 //   it under the terms of the GNU Affero General Public License as published by
 //   the Free Software Foundation, either version 3 of the License, or
 //   (at your option) any later version.
@@ -25,44 +26,36 @@
 require_once('../../approot.inc.php');
 require_once(APPROOT.'/application/application.inc.php');
 
-try
-{
+use Combodo\iTop\Application\WebPage\AjaxPage;
+
+try {
 	require_once(APPROOT.'/application/cmdbabstract.class.inc.php');
 	require_once(APPROOT.'/application/startup.inc.php');
-	
+
 	require_once(APPROOT.'/application/loginwebpage.class.inc.php');
 	LoginWebPage::DoLogin(false /* bMustBeAdmin */, false /* IsAllowedToPortalUsers */); // Check user rights and prompt if needed
 
-    $oPage = new AjaxPage('');
+	$oPage = new AjaxPage('');
 
 	$sOperation = utils::ReadParam('operation', '');
 	$iMailInboxId = utils::ReadParam('id', 0, false, 'raw_data');
-	
-	switch($sOperation)
-	{
+
+	switch ($sOperation) {
 		case 'debug_trace':
-		$oInbox = MetaModel::GetObject('MailInboxBase', $iMailInboxId, false);
-		if(is_object($oInbox))
-		{
-			if ($oInbox->Get('trace') == 'yes')
-			{
-				$oPage->add('<pre>'.htmlentities($oInbox->Get('debug_trace'), ENT_QUOTES, 'UTF-8').'</pre>');
+			$oInbox = MetaModel::GetObject('MailInboxBase', $iMailInboxId, false);
+			if (is_object($oInbox)) {
+				if ($oInbox->Get('trace') == 'yes') {
+					$oPage->add('<pre>'.htmlentities($oInbox->Get('debug_trace'), ENT_QUOTES, 'UTF-8').'</pre>');
+				} else {
+					$oPage->p(Dict::Format('MailInboxStandard:DebugTraceNotActive'));
+				}
+			} else {
+				$oPage->P(Dict::S('UI:ObjectDoesNotExist'));
 			}
-			else
-			{
-				$oPage->p(Dict::Format('MailInboxStandard:DebugTraceNotActive'));					
-			}
-		}
-		else
-		{
-			$oPage->P(Dict::S('UI:ObjectDoesNotExist'));
-		}
-		break;
+			break;
 	}
 	$oPage->output();
-}
-catch(Exception $e)
-{	
+} catch (Exception $e) {
 	$oPage->SetContentType('text/html');
 	$oPage->add($e->getMessage());
 	$oPage->output();
