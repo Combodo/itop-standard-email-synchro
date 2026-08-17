@@ -31,7 +31,7 @@ Verwenden Sie eine Feldinitialisierung pro Zeile im folgenden Format: <field_cod
 	'Class:MailInboxStandard/Attribute:email_storage+' => 'Wählen Sie die Aktion aus, die nach der erfolgreichen Verarbeitung einer eingehenden E-Mail durchgeführt werden soll. E-Mails mit Fehlern fallen nicht in den Geltungsbereich dieser Einstellung; sie werden über das Feld behandelt \'Behavior in case of error\'.',
 	'Class:MailInboxStandard/Attribute:email_storage/Value:delete' => 'Sofort löschen',
 	'Class:MailInboxStandard/Attribute:email_storage/Value:keep' => 'Auf dem Server belassen',
-	'Class:MailInboxStandard/Attribute:email_storage/Value:move' => 'Verschieben',
+	'Class:MailInboxStandard/Attribute:email_storage/Value:move' => 'In einen anderen Ordner verschieben',
 	'Class:MailInboxStandard/Attribute:error_behavior' => 'Verhalten im Fehlerfall',
 	'Class:MailInboxStandard/Attribute:error_behavior+' => 'Ursachen für E-Mails mit Fehlern: 
 - Nachrichten zu groß (größe > \'maximum_email_size\'),
@@ -53,7 +53,7 @@ Bereits verknüpfte Kontakte werden ignoriert. Unbekannte E-Mail-Adressen werden
 E-Mails mit Fehlern werden als Anhang weitergeleitet, es sei denn, sie sind zu groß. In diesem Fall werden sie in ein im Konfigurationsparameter \'big_files_dir\' angegebenes Verzeichnis verschoben..
 Wenn diese Adresse leer gelassen wird und die E-Mails mit Fehlern gelöscht werden, wird niemand das Problem bemerken und in der Lage sein, es zu beheben.',
 	'Class:MailInboxStandard/Attribute:stimuli' => 'Anzuwendende Stimuli',
-	'Class:MailInboxStandard/Attribute:stimuli+' => 'Einen Stimulus anwenden, wenn das Ticket in dem angegebenen Status ist',
+	'Class:MailInboxStandard/Attribute:stimuli+' => 'Legt fest, welcher Stimulus je Ticket-Status angewendet wird. Ein Status/Stimulus-Paar pro Zeile im Format <Statuscode>:<Stimuluscode>',
 	'Class:MailInboxStandard/Attribute:stimuli?' => 'Verwenden Sie das Format <state_code>:<stimulus_code>',
 	'Class:MailInboxStandard/Attribute:target_class' => 'Ticket-Klasse',
 	'Class:MailInboxStandard/Attribute:target_class+' => '
