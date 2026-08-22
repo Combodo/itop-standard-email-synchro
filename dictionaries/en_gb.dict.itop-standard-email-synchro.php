@@ -34,7 +34,7 @@ Dict::Add('EN GB', 'British English', 'British English', array(
 	'Class:MailInboxStandard/Attribute:behavior/Value:create_only' => 'Create new Tickets',
 	'Class:MailInboxStandard/Attribute:behavior/Value:update_only' => 'Update existing Tickets',
 	'Class:MailInboxStandard/Attribute:behavior/Value:both' => 'Create or Update Tickets',
-    'Class:MailInboxStandard/Attribute:behavior+' => 'Behavior when a new message arrives in the inbox:
+    'Class:MailInboxStandard/Attribute:behavior+' => 'Behaviour when a new message arrives in the inbox:
 - Create or Update: Update a matching Ticket found, otherwise create. 
 - Create new ticket: Every new message creates a new Ticket.
 - Update existing ticket: Update a matching Ticket found, otherwise flag in error.',
@@ -44,7 +44,7 @@ Dict::Add('EN GB', 'British English', 'British English', array(
 	'Class:MailInboxStandard/Attribute:email_storage/Value:delete' => 'Delete it immediately',
 	'Class:MailInboxStandard/Attribute:email_storage/Value:move' => 'Move it to another folder',
     'Class:MailInboxStandard/Attribute:email_storage+' => 'Select the action to be taken after successfully processing an incoming eMail.
-eMails in error are not in the scope of this setting, they are handled using the field \'Behavior in case of error\'.',
+eMails in error are not in the scope of this setting, they are handled using the field \'Behaviour in case of error\'.',
 
 	'Class:MailInboxStandard/Attribute:target_folder' => 'Target folder',
 	'Class:MailInboxStandard/Attribute:target_folder+' => 'Only used to move an email with the IMAP protocol',
@@ -88,7 +88,7 @@ One state/stimulus per line, using format <state_code>:<stimulus_code>',
 	'Class:MailInboxStandard/Attribute:unknown_caller_behavior' => 'In case of unknown sender',
 	'Class:MailInboxStandard/Attribute:unknown_caller_behavior/Value:create_contact' => 'Create a new Person',
 	'Class:MailInboxStandard/Attribute:unknown_caller_behavior/Value:reject_email' => 'Reject the eMail',
-    'Class:MailInboxStandard/Attribute:unknown_caller_behavior+' => 'Behavior when the sender email is not found in the '.ITOP_APPLICATION_SHORT.' Persons:
+    'Class:MailInboxStandard/Attribute:unknown_caller_behavior+' => 'Behaviour when the sender email is not found in the '.ITOP_APPLICATION_SHORT.' Persons:
  - Create a new Person: with the sender email and the "New Person\'s Default Values"
  - Reject the eMail: flag the eMail in error and reply to the sender with the content of "Unknown senders rejection reply"',
 
@@ -113,7 +113,7 @@ Already linked contacts are ignored. Unknown email addresses are ignored.',
 		
 	'Class:MailInboxStandard/Attribute:caller_default_values' => "New Person's Default Values",
 	'Class:MailInboxStandard/Attribute:caller_default_values+' => 'Provide a value for all mandatory fields of a Person, except email.
-Use one field initialization per line, in the format: <field_code>:<value>',
+Use one field initialisation per line, in the format: <field_code>:<value>',
 	'Class:MailInboxStandard/Attribute:caller_default_values?' => 'One setting per line, in format <field_code>:<value>',
 
 	'Class:MailInboxStandard/Attribute:debug_trace' => 'Debug trace',
