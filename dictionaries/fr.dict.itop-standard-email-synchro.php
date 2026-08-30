@@ -20,6 +20,26 @@ Dict::Add('FR FR', 'French', 'Français', [
 	'Class:MailInboxStandard/Attribute:behavior/Value:both' => 'Créer ou mettre à jour un Ticket',
 	'Class:MailInboxStandard/Attribute:behavior/Value:create_only' => 'Créer un Ticket',
 	'Class:MailInboxStandard/Attribute:behavior/Value:update_only' => 'Mettre à jour un Ticket existant',
+	'Class:MailInboxStandard/Attribute:closed_ticket_behavior'                     => 'Comportement en cas de ticket fermé',
+	'Class:MailInboxStandard/Attribute:closed_ticket_behavior+'                    => 'Si le ticket correspondant à un message reçu est fermé, donne le comportement à adopter :
+- Mettre le message en erreur
+- Marquer le message comme traité sans mettre à jour le ticket 
+- Créer un nouveau ticket,
+- Mettre à jour le ticket fermé. Dans ce cas, il est préférable de configurer un "Stimuli à appliquer" pour réouvrir le ticket.',
+	'Class:MailInboxStandard/Attribute:closed_ticket_behavior/Value:error'         => 'Mettre le mail en erreur',
+	'Class:MailInboxStandard/Attribute:closed_ticket_behavior/Value:process'       => 'Marquer le mail comme traité',
+	'Class:MailInboxStandard/Attribute:closed_ticket_behavior/Value:new_ticket'    => 'Créer un nouveau Ticket',
+	'Class:MailInboxStandard/Attribute:closed_ticket_behavior/Value:update_ticket' => 'Mettre à jour le Ticket',
+
+	'Class:MailInboxStandard/Attribute:closed_ticket_reply_subject'  => 'Sujet de la réponse en cas de ticket fermé',
+	'Class:MailInboxStandard/Attribute:closed_ticket_reply_subject+' => 'Si aucun sujet n\'est renseigné, le sujet par défaut sera :: "Re:$subject$"
+Vous pouvez utiliser les placeholders $subject$, $senderName$, $senderFirstName$ et $senderEmail$ dans le sujet du mail.',
+
+	'Class:MailInboxStandard/Attribute:closed_ticket_reply'                     => 'Réponse en cas de ticket fermé',
+	'Class:MailInboxStandard/Attribute:closed_ticket_reply+'                    => 'Auto reply optionnel en cas de ticket fermé.
+Si le champ est vide, aucun message ne sera envoyé en cas de ticket fermé
+Vous pouvez utiliser les placeholders  $subject$, $senderName$, $senderFirstName$ et $senderEmail$ dans le message.',
+
 	'Class:MailInboxStandard/Attribute:caller_default_values' => 'Valeurs par défaut pour la nouvelle Personne',
 	'Class:MailInboxStandard/Attribute:caller_default_values+' => 'Fournir une valeur pour tous les champs obligatoires de la Personne, sauf l\'email.
 Un champ par ligne, au format <code_attribut>:<valeur>',
@@ -97,12 +117,18 @@ Ne laissez pas cette option activée trop longtemps dans un environnement de pro
  - Rejeter l\'eMail : ce qui le marquera en erreur et répondra avec le contenu du champ \'Réponse aux expéditeurs inconnus\'.',
 	'Class:MailInboxStandard/Attribute:unknown_caller_behavior/Value:create_contact' => 'Créer une nouvelle Personne',
 	'Class:MailInboxStandard/Attribute:unknown_caller_behavior/Value:reject_email' => 'Rejeter l\'eMail',
+	'Class:MailInboxStandard/Attribute:unknown_caller_rejection_reply_subject'  => 'Sujet de la réponse aux expéditeurs inconnus',
+	'Class:MailInboxStandard/Attribute:unknown_caller_rejection_reply_subject+' => 'Si aucun sujet n\'est renseigné, le sujet par défaut sera : "[iTop]$subject$ - Unknown caller ($senderEmail$)".
+Vous pouvez utiliser les placeholders $subject$ et $senderEmail$ dans le sujet du mail de réponse.',
 	'Class:MailInboxStandard/Attribute:unknown_caller_rejection_reply' => 'Réponse aux expéditeurs inconnus',
 	'Class:MailInboxStandard/Attribute:unknown_caller_rejection_reply+' => 'Ce champ optionnel spécifie le message à envoyer aux expéditeurs inconnus.
 Un expéditeur inconnu est celui dont l\'adresse mail ne correspond à aucune Personne dans '.ITOP_APPLICATION_SHORT.'.
-Si ce champ est laissé vide, alors aucune réponse ne leur est envoyée.',
+Si ce champ est laissé vide, alors aucune réponse ne leur est envoyée.
+Vous pouvez utiliser les placeholders $subject$ et $senderEmail$ dans le message.',
 	'MailInbox:Behavior' => 'Comportement',
 	'MailInbox:Caller' => 'Contacts inconnus',
+	'MailInbox:TicketProcessing'                                                => 'Traitement des tickets',
+	'MailInbox:ClosedTickets'                                                   => 'Tickets fermés',
 	'MailInbox:Errors' => 'eMails en erreur',
 	'MailInbox:NoSubject' => 'Pas de sujet',
 	'MailInbox:OtherContacts' => 'Contacts Additionnels',

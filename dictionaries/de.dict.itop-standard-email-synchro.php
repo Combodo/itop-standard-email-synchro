@@ -20,6 +20,21 @@ Dict::Add('DE DE', 'German', 'Deutsch', [
 	'Class:MailInboxStandard/Attribute:behavior/Value:both' => 'Tickets anlegen oder aktualisieren',
 	'Class:MailInboxStandard/Attribute:behavior/Value:create_only' => 'Neue Tickets anlegen',
 	'Class:MailInboxStandard/Attribute:behavior/Value:update_only' => 'Vorhandene Tickets aktualisieren',
+	'Class:MailInboxStandard/Attribute:closed_ticket_behavior'                     => 'Behavior in case of closed ticket~~',
+	'Class:MailInboxStandard/Attribute:closed_ticket_behavior+'                    => 'In case of an update, it provides the behavior if the ticket is closed:
+- Mark the mail as in error
+- Mark the mail as processed, without updating the closed ticket
+- Create a new ticket
+- Update existing ticket. In this case, it\'s preferable to configure a "stimulus to apply" to reopen ticket.~~',
+	'Class:MailInboxStandard/Attribute:closed_ticket_behavior/Value:error'         => 'Mark the mail as in error~~',
+	'Class:MailInboxStandard/Attribute:closed_ticket_behavior/Value:process'       => 'Mark the mail as processed~~',
+	'Class:MailInboxStandard/Attribute:closed_ticket_behavior/Value:new_ticket'    => 'Create a new Ticket~~',
+	'Class:MailInboxStandard/Attribute:closed_ticket_behavior/Value:update_ticket' => 'Update the Ticket~~',
+
+	'Class:MailInboxStandard/Attribute:closed_ticket_reply_subject'             => 'Closed ticket autoreply subject~~',
+	'Class:MailInboxStandard/Attribute:closed_ticket_reply_subject+'            => 'If no subject is provided, then the default subject will be: "Re:$subject$"
+You can use the following placeholders : $subject$, $senderName$, $senderFirstName$ and $senderEmail$ in the email subject.~~',
+
 	'Class:MailInboxStandard/Attribute:caller_default_values' => 'Default-Werte für neue Person',
 	'Class:MailInboxStandard/Attribute:caller_default_values+' => 'Geben Sie einen Wert für alle Pflichtfelder einer Person an, mit Ausnahme der E-Mail.
 Verwenden Sie eine Feldinitialisierung pro Zeile im folgenden Format: <field_code>:<value>',
@@ -93,10 +108,15 @@ Beim Festlegen externer Schlüssel wie \'org_id\', verwenden Sie die ID (oder de
  - E-Mail ablehnen: Die E-Mail als Fehler kennzeichnen und dem Absender mit dem Inhalt von „Ablehnung unbekannter Absender“ antworten',
 	'Class:MailInboxStandard/Attribute:unknown_caller_behavior/Value:create_contact' => 'Neue Person anlegen',
 	'Class:MailInboxStandard/Attribute:unknown_caller_behavior/Value:reject_email' => 'Mail ablehnen',
-	'Class:MailInboxStandard/Attribute:unknown_caller_rejection_reply' => 'Ablehnungsnachricht bei unbekanntem Melder',
-	'Class:MailInboxStandard/Attribute:unknown_caller_rejection_reply+' => 'Optionale Antwort an den Absender, die mit der Option „E-Mail ablehnen“ verwendet wird.
-Unbekannte Absender sind E-Mail-Adressen, die mit keiner Person in '.ITOP_APPLICATION_SHORT.' übereinstimmen.
-Wenn dieses Feld leer gelassen wird, wird keine Nachricht an unbekannte Absender gesendet.',
+	'Class:MailInboxStandard/Attribute:unknown_caller_rejection_reply_subject'  => 'Unknown senders autoreply subject',
+	'Class:MailInboxStandard/Attribute:unknown_caller_rejection_reply_subject+' => 'If no subject is provided, then the default subject will be: "[iTop]$subject$ - Unknown caller ($senderEmail$)"
+You can use the following placeholders : $subject$ and $senderEmail$ in the email subject.',
+
+	'Class:MailInboxStandard/Attribute:unknown_caller_rejection_reply'  => 'Unknown senders rejection reply message',
+	'Class:MailInboxStandard/Attribute:unknown_caller_rejection_reply+' => 'Optional reply to sender used with option “Reject the eMail”.
+Unknown senders are email addresses which do not correspond to any Person in '.ITOP_APPLICATION_SHORT.'.
+If this field is left empty, then no message is sent to unknown senders
+You can use the following placeholders : $subject$ and $senderEmail$ in the message.~~',
 	'MailInbox:Behavior' => 'Verhalten bei eingehenden Mails',
 	'MailInbox:Caller' => 'Unbekannte Melder',
 	'MailInbox:Errors' => 'Mails mit Fehlern',

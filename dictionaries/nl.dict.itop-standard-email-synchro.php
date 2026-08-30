@@ -20,6 +20,21 @@ Dict::Add('NL NL', 'Dutch', 'Nederlands', [
 	'Class:MailInboxStandard/Attribute:behavior/Value:both' => 'Create or Update Tickets~~',
 	'Class:MailInboxStandard/Attribute:behavior/Value:create_only' => 'Create new Tickets~~',
 	'Class:MailInboxStandard/Attribute:behavior/Value:update_only' => 'Update existing Tickets~~',
+	'Class:MailInboxStandard/Attribute:closed_ticket_behavior'                     => 'Behavior in case of closed ticket~~',
+	'Class:MailInboxStandard/Attribute:closed_ticket_behavior+'                    => 'In case of an update, it provides the behavior if the ticket is closed:
+- Mark the mail as in error
+- Mark the mail as processed, without updating the closed ticket
+- Create a new ticket
+- Update existing ticket. In this case, it\'s preferable to configure a "stimulus to apply" to reopen ticket.~~',
+	'Class:MailInboxStandard/Attribute:closed_ticket_behavior/Value:error'         => 'Mark the mail as in error~~',
+	'Class:MailInboxStandard/Attribute:closed_ticket_behavior/Value:process'       => 'Mark the mail as processed~~',
+	'Class:MailInboxStandard/Attribute:closed_ticket_behavior/Value:new_ticket'    => 'Create a new Ticket~~',
+	'Class:MailInboxStandard/Attribute:closed_ticket_behavior/Value:update_ticket' => 'Update the Ticket~~',
+
+	'Class:MailInboxStandard/Attribute:closed_ticket_reply_subject'             => 'Closed ticket autoreply subject~~',
+	'Class:MailInboxStandard/Attribute:closed_ticket_reply_subject+'            => 'If no subject is provided, then the default subject will be: "Re:$subject$"
+You can use the following placeholders : $subject$, $senderName$, $senderFirstName$ and $senderEmail$ in the email subject.~~',
+
 	'Class:MailInboxStandard/Attribute:caller_default_values' => 'New Person\'s Default Values~~',
 	'Class:MailInboxStandard/Attribute:caller_default_values+' => 'Provide a value for all mandatory fields of a Person, except email.
 Use one field initialization per line, in the format: <field_code>:<value>~~',
@@ -97,12 +112,19 @@ Do not activate this option for long periods on production since it tends to gen
  - Reject the eMail: flag the eMail in error and reply to the sender with the content of "Unknown senders rejection reply"~~',
 	'Class:MailInboxStandard/Attribute:unknown_caller_behavior/Value:create_contact' => 'Create a new Person~~',
 	'Class:MailInboxStandard/Attribute:unknown_caller_behavior/Value:reject_email' => 'Reject the eMail~~',
-	'Class:MailInboxStandard/Attribute:unknown_caller_rejection_reply' => 'Unknown senders rejection reply~~',
+	'Class:MailInboxStandard/Attribute:unknown_caller_rejection_reply_subject'  => 'Unknown senders autoreply subject',
+	'Class:MailInboxStandard/Attribute:unknown_caller_rejection_reply_subject+' => 'If no subject is provided, then the default subject will be: "[iTop]$subject$ - Unknown caller ($senderEmail$)"
+You can use the following placeholders : $subject$ and $senderEmail$ in the email subject.',
+
+	'Class:MailInboxStandard/Attribute:unknown_caller_rejection_reply'  => 'Unknown senders rejection reply message',
 	'Class:MailInboxStandard/Attribute:unknown_caller_rejection_reply+' => 'Optional reply to sender used with option “Reject the eMail”.
 Unknown senders are email addresses which do not correspond to any Person in '.ITOP_APPLICATION_SHORT.'.
-If this field is left empty, then no message is sent to unknown senders~~',
+If this field is left empty, then no message is sent to unknown senders
+You can use the following placeholders : $subject$ and $senderEmail$ in the message.~~',
 	'MailInbox:Behavior' => 'Behavior on Incoming eMails~~',
 	'MailInbox:Caller' => 'Unknown Senders~~',
+	'MailInbox:TicketProcessing'                                        => 'Ticket Processing~~',
+	'MailInbox:ClosedTickets'                                           => 'Closed Tickets~~',
 	'MailInbox:Errors' => 'Emails in Error~~',
 	'MailInbox:NoSubject' => 'No subject~~',
 	'MailInbox:OtherContacts' => 'Behavior for Additional Contacts~~',
